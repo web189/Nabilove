@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>LoviaPartner — Teman ngobrol yang bikin harimu lebih hangat</title>
+  
+  <!-- Primary Meta -->
+  <meta name="title" content="LoviaPartner — Teman ngobrol yang bikin harimu lebih hangat 💗">
+  <meta name="description" content="Chat, call, video call, mabar & offline date bareng talent terverifikasi. Booking cepat, pembayaran aman, mulai dari Rp12rb. Cari teman yang cocok denganmu sekarang.">
+
+  <!-- Open Graph / WhatsApp / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="LoviaPartner">
+  <meta property="og:locale" content="id_ID">
+  <meta property="og:url" content="https://benyoriki.github.io/LoviaPartner/">
+  <meta property="og:title" content="LoviaPartner 💗 Teman ngobrol yang bikin harimu lebih hangat">
+  <meta property="og:description" content="Chat, call, video call, mabar & offline date bareng talent terverifikasi. Mulai dari Rp12rb. Yuk, kenalan ✨">
+  <meta property="og:image" content="https://benyoriki.github.io/LoviaPartner/preview.jpg?v=2">
+  <meta property="og:image:secure_url" content="https://benyoriki.github.io/LoviaPartner/preview.jpg?v=2">
+  <meta property="og:image:type" content="image/jpeg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="LoviaPartner — teman ngobrol yang bikin harimu lebih hangat">
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="LoviaPartner 💗 Teman ngobrol yang bikin harimu lebih hangat">
+  <meta name="twitter:description" content="Chat, call, video call, mabar & offline date bareng talent terverifikasi. Mulai dari Rp12rb.">
+  <meta name="twitter:image" content="https://benyoriki.github.io/LoviaPartner/preview.jpg?v=2">
+
+  <meta name="keywords" content="lovia partner, teman virtual, companionship, teman ngobrol, video call, mabar, offline date">
+  <meta name="author" content="LoviaPartner">
+  <meta name="theme-color" content="#c81e5b">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Lovia">
+  <meta name="color-scheme" content="dark light">
+  <meta name="robots" content="index, follow">
+
+  <link rel="icon" href="favicon.png" type="image/png">
+  <link rel="apple-touch-icon" href="favicon.png">
+  <link rel="icon" type="image/png" href="https://benyoriki.github.io/LoviaPartner/favicon.png">
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="theme.css?v=3" />
+  <link rel="stylesheet" href="modern.css?v=5" />
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,450;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+<script>(function(){try{var s=localStorage.getItem('lovia_theme');if(s!=='dark'&&s!=='light'){s=window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'}document.documentElement.setAttribute('data-theme',s)}catch(e){}})();</script>
+</head>
+<body>
+
+<!-- CUSTOM CURSOR -->
+<div class="cursor-dot" id="cursorDot"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- LOADING SCREEN -->
+<div class="loading-screen" id="loadingScreen">
+  <div class="loading-particles" id="loadingParticles"></div>
+  <div class="loading-inner">
+    <div class="loading-ring">
+      <svg viewBox="0 0 100 100">
+        <defs>
+          <linearGradient id="loadingGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#b8144a"/>
+            <stop offset="55%" stop-color="#b98a44"/>
+            <stop offset="100%" stop-color="#8f74c9"/>
+          </linearGradient>
+        </defs>
+        <circle class="ring-bg" cx="50" cy="50" r="42"></circle>
+        <circle class="ring-fg" cx="50" cy="50" r="42"></circle>
+      </svg>
+      <div class="loading-heart">💗</div>
+    </div>
+    <div class="loading-logo">Lovia<span>Partner</span></div>
+    <div class="loading-tagline">Companionship Premium</div>
+    <div class="loading-bar"><div class="loading-fill"></div></div>
+    <p id="loadingText">Mempersiapkan pengalaman terbaik...</p>
+    <div class="loading-credit">dibuat dengan 💗 oleh <a href="https://benyoriki.com/" target="_blank" rel="noopener">benyoriki.com</a></div>
+  </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- PROTOTYPE NOTICE -->
+<div class="proto-badge" id="protoBadge">
+  <i class="fas fa-flask"></i>
+  <span>Prototipe LoviaPartner — hanya contoh untuk keperluan testing. <a href="https://benyoriki.com/" target="_blank" rel="noopener">benyoriki.com</a></span>
+  <button onclick="document.getElementById('protoBadge').classList.add('hide')" aria-label="Tutup">✕</button>
+</div>
+
+<!-- ===== NAVBAR ===== -->
+<nav class="navbar" id="navbar">
+  <div class="nav-container">
+    <a href="#" class="nav-logo" onclick="showPage('landing')">Lovia<span>Partner</span></a>
+    <div class="nav-links" id="navLinks">
+      <div class="nav-links-label">Menu</div>
+      <a href="#" data-page="landing" onclick="showPage('landing')"><i class="fas fa-house"></i><span>Beranda</span></a>
+      <a href="#" data-page="talents" onclick="showPage('talents')"><i class="fas fa-users"></i><span>Talent</span></a>
+      <a href="#" data-page="pricelist" onclick="showPage('pricelist')"><i class="fas fa-tags"></i><span>Pricelist</span></a>
+      <a href="#" data-page="layanan" onclick="showPage('layanan')"><i class="fas fa-heart-circle-check"></i><span>Layanan</span></a>
+      <a href="#" data-page="daftar-talent" onclick="showPage('daftar-talent')"><i class="fas fa-user-plus"></i><span>Jadi Talent</span></a>
+      <a href="#" data-page="about" onclick="showPage('about')"><i class="fas fa-circle-info"></i><span>Tentang</span></a>
+    </div>
+    <div class="nav-actions">
+      <button class="theme-toggle" id="themeToggle" title="Toggle Dark Mode">
+        <i class="fas fa-moon" id="themeIcon"></i>
+      </button>
+      <button class="btn-nav-login" onclick="showLoginModal()">
+        <i class="fas fa-user"></i> Masuk
+      </button>
+      <button class="nav-hamburger" id="hamburger" onclick="toggleMobileMenu()">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</nav>
+<div class="nav-backdrop" id="navBackdrop" onclick="toggleMobileMenu()"></div>
+
+<!-- ===== PAGES WRAPPER ===== -->
+<div id="appContent">
+
+<!-- ========== LANDING PAGE ========== -->
+<div id="page-landing" class="page active">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-bg-shapes">
+      <div class="shape shape-1"></div>
+      <div class="shape shape-2"></div>
+      <div class="shape shape-3"></div>
+    </div>
+    <div class="hero-content reveal">
+      <div class="hero-badge"><i class="fas fa-shield-heart"></i> Talent terverifikasi, pembayaran aman</div>
+      <h1 class="hero-title">Temukan <em>Partner</em><br>Virtual Terbaikmu</h1>
+      <p class="hero-sub">Mau ditemani ngobrol malam ini? Pilih talent yang ramah dan seru, lalu chat, call, video call, mabar, atau jalan bareng. Booking cepat, tanpa ribet.</p>
+      <div class="hero-actions">
+        <button class="btn-primary glow-btn" onclick="showPage('talents')"><i class="fas fa-heart"></i> Cari teman sekarang</button>
+        <button class="btn-outline" onclick="showPage('pricelist')"><i class="fas fa-tags"></i> Lihat harga</button>
+      </div>
+      <div class="hero-stats">
+        <div class="hstat"><span class="hstat-num" data-target="1500">0</span><span class="hstat-label">Pengguna Aktif</span></div>
+        <div class="hstat-div"></div>
+        <div class="hstat"><span class="hstat-num" data-target="11">0</span><span class="hstat-label">Talent Pilihan</span></div>
+        <div class="hstat-div"></div>
+        <div class="hstat"><span class="hstat-num" data-target="98">0</span><span class="hstat-label">% Kepuasan</span></div>
+      </div>
+    </div>
+    <div class="hero-visual reveal-right">
+      <div class="hero-card-stack">
+        <div class="hcard hcard-1"><div class="hcard-avatar hcard-avatar-1">A</div><div class="hcard-info"><strong>Ara Salsabila</strong><span>⭐ 4.9 · Jakarta</span></div><div class="hcard-status online">Online</div></div>
+        <div class="hcard hcard-2 active"><div class="hcard-avatar hcard-avatar-2">K</div><div class="hcard-info"><strong>Kira Mahesa</strong><span>⭐ 4.8 · Bali</span></div><div class="hcard-status online">Online</div></div>
+        <div class="hcard hcard-3"><div class="hcard-avatar hcard-avatar-3">D</div><div class="hcard-info"><strong>Dira Cantika</strong><span>⭐ 5.0 · Surabaya</span></div><div class="hcard-status online">Online</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SERVICES OVERVIEW -->
+  <section class="section services-overview">
+    <div class="container">
+      <div class="section-header reveal">
+        <div class="section-badge">Layanan Kami</div>
+        <h2>Semua yang Kamu <em>Butuhkan</em></h2>
+        <p>Dari ngobrol santai hingga kencan offline — kami siap</p>
+      </div>
+      <div class="services-grid">
+        <div class="service-card reveal" onclick="showPage('layanan')"><div class="sc-icon">💬</div><h3>Chatting</h3><p>Teman ngobrol responsif & asik</p></div>
+        <div class="service-card reveal" onclick="showPage('layanan')"><div class="sc-icon">📞</div><h3>Calling</h3><p>Suara hangat menemanimu</p></div>
+        <div class="service-card reveal" onclick="showPage('layanan')"><div class="sc-icon">🎥</div><h3>Video Call</h3><p>Tatap muka virtual intim</p></div>
+        <div class="service-card reveal" onclick="showPage('layanan')"><div class="sc-icon">📍</div><h3>Offline Date</h3><p>Jalan bareng ke tempat favoritmu</p></div>
+        <div class="service-card reveal" onclick="showPage('layanan')"><div class="sc-icon">🎮</div><h3>Mabar</h3><p>Main game bareng talent jago</p></div>
+        <div class="service-card featured reveal" onclick="showPage('pricelist')"><div class="sc-icon">📸</div><h3>PAP</h3><p>Foto & bukti keseruan bareng</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TALENT SHOWCASE -->
+  <section class="section talent-showcase">
+    <div class="container">
+      <div class="section-header reveal">
+        <div class="section-badge">Talent Unggulan</div>
+        <h2>Pilihan <em>Terbaik</em> Kami</h2>
+        <p>Talent terverifikasi dan siap menemanimu</p>
+      </div>
+      <div class="talent-showcase-grid" id="talentShowcase"></div>
+      <div style="text-align:center;margin-top:2.5rem" class="reveal">
+        <button class="btn-primary" onclick="showPage('talents')"><i class="fas fa-users"></i> Lihat Semua Talent</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- TESTIMONIALS -->
+  <section class="section testimonials">
+    <div class="container">
+      <div class="section-header reveal">
+        <div class="section-badge">Testimoni</div>
+        <h2>Kata <em>Mereka</em></h2>
+        <p>Ribuan customer sudah merasakannya</p>
+      </div>
+      <div class="testimonials-grid" id="testimonialsGrid"></div>
+    </div>
+  </section>
+
+  <!-- WHY US -->
+  <section class="section why-us">
+    <div class="container">
+      <div class="section-header reveal">
+        <div class="section-badge">Kenapa Kami?</div>
+        <h2>Aman, Nyaman, <em>Terpercaya</em></h2>
+      </div>
+      <div class="why-grid">
+        <div class="why-card reveal"><div class="why-icon"><i class="fas fa-shield-alt"></i></div><h3>100% Aman</h3><p>Semua talent diverifikasi ketat. Privasi kamu terjaga penuh.</p></div>
+        <div class="why-card reveal"><div class="why-icon"><i class="fas fa-star"></i></div><h3>Talent Premium</h3><p>Dipilih dari ratusan kandidat — ramah, asik, dan profesional.</p></div>
+        <div class="why-card reveal"><div class="why-icon"><i class="fas fa-bolt"></i></div><h3>Booking Mudah</h3><p>Proses cepat dan mudah. Konfirmasi dalam hitungan menit.</p></div>
+        <div class="why-card reveal"><div class="why-icon"><i class="fas fa-headset"></i></div><h3>Support 24/7</h3><p>Admin siap membantu kapan saja via WhatsApp.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section faq-section">
+    <div class="container">
+      <div class="section-header reveal">
+        <div class="section-badge">FAQ</div>
+        <h2>Pertanyaan yang <em>Sering Ditanyakan</em></h2>
+        <p>Masih ragu? Cek dulu jawabannya di sini</p>
+      </div>
+      <div class="faq-list">
+        <div class="faq-item reveal">
+          <button class="faq-question" onclick="toggleFaq(this)">
+            <span>Apakah data & identitas saya aman?</span>
+            <i class="fas fa-chevron-down"></i>
+          </button>
+          <div class="faq-answer"><p>Ya. Semua data pengguna dan talent dienkripsi dan tidak pernah dibagikan ke pihak ketiga. Privasi adalah prioritas utama kami.</p></div>
+        </div>
+        <div class="faq-item reveal">
+          <button class="faq-question" onclick="toggleFaq(this)">
+            <span>Bagaimana cara booking talent?</span>
+            <i class="fas fa-chevron-down"></i>
+          </button>
+          <div class="faq-answer"><p>Pilih talent favoritmu, tentukan layanan & durasi di halaman Pricelist, lalu kirim pesan lewat tombol Chat Admin. Prosesnya cuma hitungan menit.</p></div>
+        </div>
+        <div class="faq-item reveal">
+          <button class="faq-question" onclick="toggleFaq(this)">
+            <span>Apakah semua talent sudah terverifikasi?</span>
+            <i class="fas fa-chevron-down"></i>
+          </button>
+          <div class="faq-answer"><p>Setiap talent melalui proses seleksi identitas & wawancara sebelum aktif melayani, ditandai dengan badge "Verified" di profil mereka.</p></div>
+        </div>
+        <div class="faq-item reveal">
+          <button class="faq-question" onclick="toggleFaq(this)">
+            <span>Metode pembayaran apa saja yang tersedia?</span>
+            <i class="fas fa-chevron-down"></i>
+          </button>
+          <div class="faq-answer"><p>Pembayaran dikonfirmasi langsung lewat admin WhatsApp — transfer bank & e-wallet populer semua didukung.</p></div>
+        </div>
+        <div class="faq-item reveal">
+          <button class="faq-question" onclick="toggleFaq(this)">
+            <span>Apakah ada batasan konten dalam layanan ini?</span>
+            <i class="fas fa-chevron-down"></i>
+          </button>
+          <div class="faq-answer"><p>Ya. Lovia Partner hanya menyediakan layanan companionship profesional dengan batasan sopan, dan tidak melayani konten vulgar atau aktivitas melanggar hukum.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="section cta-section">
+    <div class="container">
+      <div class="cta-box reveal">
+        <h2>Siap Memulai <em>Pengalaman</em> Baru?</h2>
+        <p>Bergabunglah dengan 1500+ pengguna yang sudah menikmati layanan Lovia Partner</p>
+        <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;margin-top:2rem">
+          <button class="btn-primary glow-btn" onclick="showPage('talents')"><i class="fas fa-heart"></i> Mulai Sekarang</button>
+          <button class="btn-outline" onclick="showPage('daftar-talent')"><i class="fas fa-user-plus"></i> Jadi Talent</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ========== TALENTS PAGE ========== -->
+<div id="page-talents" class="page">
+  <div class="page-hero">
+    <h1>Temukan <em>Talent</em> Favoritmu</h1>
+    <p>Pilih dari talent terverifikasi kami yang siap menemanimu</p>
+  </div>
+  <div class="container">
+    <div class="talent-filters">
+      <div class="search-wrap"><i class="fas fa-search"></i><input type="text" id="searchTalent" placeholder="Cari nama talent..." oninput="renderTalents()" /></div>
+      <div class="custom-select" id="filterGenderWrap">
+        <button type="button" class="custom-select-trigger" onclick="toggleCustomSelect('filterGender')"><span class="cs-value">Semua Gender</span><i class="fas fa-chevron-down"></i></button>
+        <div class="custom-select-panel" id="filterGenderPanel">
+          <div class="cs-option selected" data-value="" onclick="selectCustomOption(this,'filterGender','renderTalents')">Semua Gender</div>
+          <div class="cs-option" data-value="Perempuan" onclick="selectCustomOption(this,'filterGender','renderTalents')">Perempuan</div>
+          <div class="cs-option" data-value="Laki-laki" onclick="selectCustomOption(this,'filterGender','renderTalents')">Laki-laki</div>
+        </div>
+        <input type="hidden" id="filterGender" value="">
+      </div>
+      <div class="custom-select" id="filterServiceWrap">
+        <button type="button" class="custom-select-trigger" onclick="toggleCustomSelect('filterService')"><span class="cs-value">Semua Layanan</span><i class="fas fa-chevron-down"></i></button>
+        <div class="custom-select-panel" id="filterServicePanel">
+          <div class="cs-option selected" data-value="" onclick="selectCustomOption(this,'filterService','renderTalents')">Semua Layanan</div>
+          <div class="cs-option" data-value="Chatting" onclick="selectCustomOption(this,'filterService','renderTalents')">Chatting</div>
+          <div class="cs-option" data-value="Calling" onclick="selectCustomOption(this,'filterService','renderTalents')">Calling</div>
+          <div class="cs-option" data-value="Video Call" onclick="selectCustomOption(this,'filterService','renderTalents')">Video Call</div>
+          <div class="cs-option" data-value="Offline Date" onclick="selectCustomOption(this,'filterService','renderTalents')">Offline Date</div>
+          <div class="cs-option" data-value="Mabar" onclick="selectCustomOption(this,'filterService','renderTalents')">Mabar</div>
+        </div>
+        <input type="hidden" id="filterService" value="">
+      </div>
+      <div class="custom-select" id="filterLocationWrap">
+        <button type="button" class="custom-select-trigger" onclick="toggleCustomSelect('filterLocation')"><span class="cs-value">Semua Kota</span><i class="fas fa-chevron-down"></i></button>
+        <div class="custom-select-panel" id="filterLocationPanel">
+          <div class="cs-option selected" data-value="" onclick="selectCustomOption(this,'filterLocation','renderTalents')">Semua Kota</div>
+          <div class="cs-option" data-value="Jakarta" onclick="selectCustomOption(this,'filterLocation','renderTalents')">Jakarta</div>
+          <div class="cs-option" data-value="Bandung" onclick="selectCustomOption(this,'filterLocation','renderTalents')">Bandung</div>
+          <div class="cs-option" data-value="Surabaya" onclick="selectCustomOption(this,'filterLocation','renderTalents')">Surabaya</div>
+          <div class="cs-option" data-value="Yogyakarta" onclick="selectCustomOption(this,'filterLocation','renderTalents')">Yogyakarta</div>
+          <div class="cs-option" data-value="Bali" onclick="selectCustomOption(this,'filterLocation','renderTalents')">Bali</div>
+        </div>
+        <input type="hidden" id="filterLocation" value="">
+      </div>
+      <div class="custom-select" id="sortTalentWrap">
+        <button type="button" class="custom-select-trigger" onclick="toggleCustomSelect('sortTalent')"><span class="cs-value">Urutkan</span><i class="fas fa-chevron-down"></i></button>
+        <div class="custom-select-panel" id="sortTalentPanel">
+          <div class="cs-option selected" data-value="" onclick="selectCustomOption(this,'sortTalent','renderTalents')">Urutkan</div>
+          <div class="cs-option" data-value="rating" onclick="selectCustomOption(this,'sortTalent','renderTalents')">Rating Tertinggi</div>
+          <div class="cs-option" data-value="bookings" onclick="selectCustomOption(this,'sortTalent','renderTalents')">Paling Populer</div>
+          <div class="cs-option" data-value="name" onclick="selectCustomOption(this,'sortTalent','renderTalents')">Nama A-Z</div>
+        </div>
+        <input type="hidden" id="sortTalent" value="">
+      </div>
+    </div>
+    <p style="color:var(--text-muted);font-size:.85rem;margin-bottom:1rem">Menampilkan <strong><span id="talentCount">0</span> talent</strong></p>
+    <div class="talent-grid" id="talentGrid"></div>
+  </div>
+</div>
+
+<!-- ========== PRICELIST PAGE ========== -->
+<div id="page-pricelist" class="page">
+  <div class="page-hero">
+    <h1>Pricelist <em>Layanan</em></h1>
+    <p>Harga transparan, kualitas premium — no hidden fee!</p>
+  </div>
+  <div class="container">
+    <div class="price-filter-bar">
+      <button class="price-filter-btn active" onclick="filterPrice('all', this)">Semua</button>
+      <button class="price-filter-btn" onclick="filterPrice('chatting', this)">💬 Chatting</button>
+      <button class="price-filter-btn" onclick="filterPrice('calling', this)">📞 Calling</button>
+      <button class="price-filter-btn" onclick="filterPrice('videocall', this)">🎥 Video Call</button>
+      <button class="price-filter-btn" onclick="filterPrice('offline', this)">📍 Offline Date</button>
+      <button class="price-filter-btn" onclick="filterPrice('pap', this)">📸 PAP</button>
+      <button class="price-filter-btn" onclick="filterPrice('mabar', this)">🎮 Mabar</button>
+    </div>
+    <div id="pricelistContainer"></div>
+  </div>
+</div>
+
+<!-- ========== LAYANAN PAGE ========== -->
+<div id="page-layanan" class="page">
+  <div class="page-hero">
+    <h1>Layanan <em>Kami</em></h1>
+    <p>Pilih layanan sesuai kebutuhan dan mood kamu</p>
+  </div>
+  <div class="container">
+    <div class="layanan-grid">
+      <div class="layanan-card lc-1">
+        <div class="lc-icon"><i class="fas fa-comment-dots"></i></div>
+        <h3>Chatting</h3>
+        <p>Ngobrol santai, curhat, atau sekadar teman ngobrol asik. Talent kami responsif dan menyenangkan untuk diajak ngobrol kapan saja.</p>
+        <ul><li>Chat via platform</li><li>Balas dalam 5 menit</li><li>Topik bebas & menarik</li></ul>
+        <button class="btn-primary" onclick="showPage('pricelist')">Lihat Harga</button>
+      </div>
+      <div class="layanan-card lc-2">
+        <div class="lc-icon"><i class="fas fa-phone-alt"></i></div>
+        <h3>Calling</h3>
+        <p>Telepon langsung dengan suara yang hangat dan menenangkan. Cocok untuk kamu yang butuh teman ngobrol lebih dekat.</p>
+        <ul><li>Audio call jernih</li><li>Dijamin nyaman</li><li>Bisa sambil kerja</li></ul>
+        <button class="btn-primary" onclick="showPage('pricelist')">Lihat Harga</button>
+      </div>
+      <div class="layanan-card lc-3">
+        <div class="lc-icon"><i class="fas fa-video"></i></div>
+        <h3>Video Call</h3>
+        <p>Bertatap muka langsung secara virtual. Rasakan kehangatan interaksi yang lebih personal dan intim bersama talent pilihan.</p>
+        <ul><li>Video HD</li><li>Tampilan aesthetic</li><li>Privasi terjaga</li></ul>
+        <button class="btn-primary" onclick="showPage('pricelist')">Lihat Harga</button>
+      </div>
+      <div class="layanan-card lc-4">
+        <div class="lc-icon"><i class="fas fa-map-marker-alt"></i></div>
+        <h3>Offline Date</h3>
+        <p>Jalan bareng ke tempat favoritmu — cafe, mall, taman, atau kulineran. Talent siap menemanimu dengan penuh keseruan.</p>
+        <ul><li>Meet in public area</li><li>Aman & terpercaya</li><li>Foto & konten bareng</li></ul>
+        <button class="btn-primary" onclick="showPage('pricelist')">Lihat Harga</button>
+      </div>
+      <div class="layanan-card lc-5">
+        <div class="lc-icon"><i class="fas fa-gamepad"></i></div>
+        <h3>Mabar / Gaming</h3>
+        <p>Main game bareng talent yang jago dan asik. Mobile Legends, PUBG, Valorant, atau game favoritmu — lebih seru bareng!</p>
+        <ul><li>Berbagai platform game</li><li>Skill beragam</li><li>Komunikasi seru</li></ul>
+        <button class="btn-primary" onclick="showPage('pricelist')">Lihat Harga</button>
+      </div>
+      <div class="layanan-card lc-6 featured-layanan">
+        <div class="lc-badge">⭐ Rekomendasi</div>
+        <div class="lc-icon"><i class="fas fa-gem"></i></div>
+        <h3>Kombinasi Lengkap</h3>
+        <p>Gabungkan beberapa layanan sekaligus — chat, call, video call, hingga offline date — untuk pengalaman companionship yang paling lengkap.</p>
+        <ul><li>Chat + Call + VC</li><li>Offline date tersedia</li><li>Prioritas response</li></ul>
+        <button class="btn-primary" onclick="showPage('pricelist')">Lihat Harga</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== DAFTAR TALENT PAGE ========== -->
+<div id="page-daftar-talent" class="page">
+  <div class="page-hero">
+    <h1>Daftar <em>Jadi Talent</em></h1>
+    <p>Bergabung dan mulai penghasilan bersama Lovia Partner</p>
+  </div>
+  <div class="container">
+    <div class="register-wrapper">
+      <div class="register-info">
+        <h3>Kenapa Bergabung?</h3>
+        <div class="reg-benefit"><i class="fas fa-money-bill-wave"></i><div><strong>Penghasilan Menarik</strong><p>Kamu menentukan sendiri jadwal dan harga</p></div></div>
+        <div class="reg-benefit"><i class="fas fa-shield-alt"></i><div><strong>Aman & Terlindungi</strong><p>Platform kami menjaga keamanan semua talent</p></div></div>
+        <div class="reg-benefit"><i class="fas fa-users"></i><div><strong>Komunitas Supportif</strong><p>Bergabung dengan ribuan talent aktif kami</p></div></div>
+        <div class="reg-benefit"><i class="fas fa-chart-line"></i><div><strong>Tingkatkan Skill</strong><p>Pelatihan komunikasi & personal branding</p></div></div>
+      </div>
+      <div class="register-form-wrap">
+        <div class="step-indicator">
+          <div class="step active" id="step-ind-1">1<span>Data Diri</span></div>
+          <div class="step-line"></div>
+          <div class="step" id="step-ind-2">2<span>Profil</span></div>
+          <div class="step-line"></div>
+          <div class="step" id="step-ind-3">3<span>Layanan</span></div>
+        </div>
+        <div id="regStep1" class="reg-step active">
+          <h3>Data Diri</h3>
+          <div class="form-grid">
+            <div class="form-group"><label>Nama Lengkap *</label><input type="text" id="reg_nama" placeholder="Nama lengkapmu" /></div>
+            <div class="form-group"><label>Nama Panggilan *</label><input type="text" id="reg_panggilan" placeholder="Nama panggilan" /></div>
+            <div class="form-group"><label>Umur *</label><input type="number" id="reg_umur" placeholder="Umurmu" min="18" max="35" /></div>
+            <div class="form-group"><label>Gender *</label>
+              <div class="custom-select" id="reg_genderWrap">
+                <button type="button" class="custom-select-trigger" onclick="toggleCustomSelect('reg_gender')"><span class="cs-value">Pilih</span><i class="fas fa-chevron-down"></i></button>
+                <div class="custom-select-panel" id="reg_genderPanel">
+                  <div class="cs-option selected" data-value="" onclick="selectCustomOption(this,'reg_gender')">Pilih</div>
+                  <div class="cs-option" data-value="Perempuan" onclick="selectCustomOption(this,'reg_gender')">Perempuan</div>
+                  <div class="cs-option" data-value="Laki-laki" onclick="selectCustomOption(this,'reg_gender')">Laki-laki</div>
+                </div>
+                <input type="hidden" id="reg_gender" value="">
+              </div>
+            </div>
+            <div class="form-group"><label>Kota *</label><input type="text" id="reg_kota" placeholder="Kota tempat tinggal" /></div>
+            <div class="form-group"><label>Nomor WhatsApp *</label><input type="text" id="reg_wa" placeholder="08xxxxxxxxxx" /></div>
+            <div class="form-group full"><label>Email *</label><input type="email" id="reg_email" placeholder="email@kamu.com" /></div>
+          </div>
+          <button class="btn-primary" onclick="regNext(1)">Lanjut <i class="fas fa-arrow-right"></i></button>
+        </div>
+        <div id="regStep2" class="reg-step">
+          <h3>Profil & Sosial Media</h3>
+          <div class="form-grid">
+            <div class="form-group full"><label>Bio Singkat *</label><textarea id="reg_bio" rows="3" placeholder="Ceritakan sedikit tentang dirimu..."></textarea></div>
+            <div class="form-group full"><label>Pengalaman</label><textarea id="reg_exp" rows="2" placeholder="Pengalamanmu (opsional)"></textarea></div>
+            <div class="form-group"><label>Skill Komunikasi</label>
+              <div class="custom-select" id="reg_skillWrap">
+                <button type="button" class="custom-select-trigger" onclick="toggleCustomSelect('reg_skill')"><span class="cs-value">Pemula</span><i class="fas fa-chevron-down"></i></button>
+                <div class="custom-select-panel" id="reg_skillPanel">
+                  <div class="cs-option selected" data-value="Pemula" onclick="selectCustomOption(this,'reg_skill')">Pemula</div>
+                  <div class="cs-option" data-value="Menengah" onclick="selectCustomOption(this,'reg_skill')">Menengah</div>
+                  <div class="cs-option" data-value="Mahir" onclick="selectCustomOption(this,'reg_skill')">Mahir</div>
+                </div>
+                <input type="hidden" id="reg_skill" value="Pemula">
+              </div>
+            </div>
+            <div class="form-group"><label>Instagram</label><input type="text" id="reg_ig" placeholder="@username" /></div>
+            <div class="form-group"><label>TikTok</label><input type="text" id="reg_tiktok" placeholder="@username" /></div>
+          </div>
+          <div style="display:flex;gap:.75rem">
+            <button class="btn-outline" onclick="regPrev(2)"><i class="fas fa-arrow-left"></i> Kembali</button>
+            <button class="btn-primary" onclick="regNext(2)">Lanjut <i class="fas fa-arrow-right"></i></button>
+          </div>
+        </div>
+        <div id="regStep3" class="reg-step">
+          <h3>Pilih Layanan & Jadwal</h3>
+          <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:1rem">Pilih layanan yang ingin kamu tawarkan</p>
+          <div class="checkbox-group">
+            <label class="check-item"><input type="checkbox" class="reg-service" value="Chatting"> 💬 Chatting</label>
+            <label class="check-item"><input type="checkbox" class="reg-service" value="Calling"> 📞 Calling</label>
+            <label class="check-item"><input type="checkbox" class="reg-service" value="Video Call"> 🎥 Video Call</label>
+            <label class="check-item"><input type="checkbox" class="reg-service" value="Offline Date"> 📍 Offline Date</label>
+            <label class="check-item"><input type="checkbox" class="reg-service" value="Mabar"> 🎮 Mabar</label>
+          </div>
+          <p style="font-size:.85rem;color:var(--text-muted);margin:.75rem 0">Jadwal aktif</p>
+          <div class="checkbox-group">
+            <label class="check-item"><input type="checkbox" class="reg-schedule" value="Pagi (06-12)"> 🌅 Pagi (06–12)</label>
+            <label class="check-item"><input type="checkbox" class="reg-schedule" value="Siang (12-17)"> ☀️ Siang (12–17)</label>
+            <label class="check-item"><input type="checkbox" class="reg-schedule" value="Sore (17-20)"> 🌆 Sore (17–20)</label>
+            <label class="check-item"><input type="checkbox" class="reg-schedule" value="Malam (20-24)"> 🌙 Malam (20–24)</label>
+          </div>
+          <div style="padding:.75rem;background:var(--pink-light);border-radius:var(--radius-sm);font-size:.8rem;color:var(--pink-deep);margin:.75rem 0"><i class="fas fa-info-circle"></i> Dengan mendaftar kamu menyetujui syarat & ketentuan Lovia Partner.</div>
+          <div style="display:flex;gap:.75rem">
+            <button class="btn-outline" onclick="regPrev(3)"><i class="fas fa-arrow-left"></i> Kembali</button>
+            <button class="btn-primary glow-btn" onclick="submitRegister()"><i class="fas fa-paper-plane"></i> Kirim Pendaftaran</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== ABOUT PAGE ========== -->
+<div id="page-about" class="page">
+  <div class="page-hero">
+    <h1>Tentang <em>Lovia Partner</em></h1>
+    <p>Platform companionship digital terpercaya Indonesia</p>
+  </div>
+
+  <div class="container">
+    <div class="about-stats">
+      <div class="about-stat"><span class="about-stat-num">1.500+</span><span class="about-stat-label">Pengguna Aktif</span></div>
+      <div class="about-stat"><span class="about-stat-num">11</span><span class="about-stat-label">Talent Terverifikasi</span></div>
+      <div class="about-stat"><span class="about-stat-num">98%</span><span class="about-stat-label">Kepuasan Pelanggan</span></div>
+      <div class="about-stat"><span class="about-stat-num">24/7</span><span class="about-stat-label">Dukungan Aktif</span></div>
+    </div>
+
+    <div class="about-grid">
+      <div class="about-visi">
+        <div class="section-badge">Visi</div>
+        <h3>Menjadi platform companionship digital terpercaya dan modern di Indonesia dengan pelayanan profesional, aman, dan nyaman.</h3>
+      </div>
+      <div class="about-misi">
+        <div class="section-badge">Misi</div>
+        <ul class="misi-list">
+          <li><i class="fas fa-heart"></i> Memberikan pengalaman interaksi yang positif</li>
+          <li><i class="fas fa-star"></i> Menyediakan talent berkualitas dan terseleksi</li>
+          <li><i class="fas fa-shield-alt"></i> Menjaga keamanan dan privasi pengguna</li>
+          <li><i class="fas fa-laptop"></i> Memberikan layanan modern berbasis teknologi</li>
+          <li><i class="fas fa-trophy"></i> Menjadi platform companionship terbaik 2026</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="section-header reveal" style="margin-top:2rem">
+      <div class="section-badge">Nilai Kami</div>
+      <h2>Prinsip yang Kami <em>Pegang</em></h2>
+      <p>Empat hal yang menjadi dasar setiap layanan Lovia Partner</p>
+    </div>
+    <div class="about-values">
+      <div class="about-value-card reveal">
+        <div class="why-icon"><i class="fas fa-user-shield"></i></div>
+        <h3>Verifikasi Ketat</h3>
+        <p>Setiap talent melalui proses seleksi identitas & wawancara sebelum aktif melayani.</p>
+      </div>
+      <div class="about-value-card reveal">
+        <div class="why-icon"><i class="fas fa-lock"></i></div>
+        <h3>Privasi Terjaga</h3>
+        <p>Data pengguna dan talent dienkripsi serta tidak pernah dibagikan ke pihak ketiga.</p>
+      </div>
+      <div class="about-value-card reveal">
+        <div class="why-icon"><i class="fas fa-handshake"></i></div>
+        <h3>Etika &amp; Batasan</h3>
+        <p>Semua interaksi tunduk pada aturan kesopanan yang jelas — tanpa konten vulgar.</p>
+      </div>
+      <div class="about-value-card reveal">
+        <div class="why-icon"><i class="fas fa-headset"></i></div>
+        <h3>Dukungan Nyata</h3>
+        <p>Tim support siaga 24/7 untuk membantu setiap kendala booking maupun pembayaran.</p>
+      </div>
+    </div>
+
+    <div class="section-header reveal" style="margin-top:1rem">
+      <div class="section-badge">Cara Kerja</div>
+      <h2>Tiga Langkah <em>Mudah</em></h2>
+      <p>Dari daftar sampai ngobrol pertama, prosesnya singkat</p>
+    </div>
+    <div class="about-timeline">
+      <div class="about-step reveal">
+        <div class="about-step-num">01</div>
+        <h3>Pilih Talent</h3>
+        <p>Jelajahi profil talent terverifikasi sesuai minat, kota, dan layanan yang kamu mau.</p>
+      </div>
+      <div class="about-step reveal">
+        <div class="about-step-num">02</div>
+        <h3>Booking &amp; Bayar</h3>
+        <p>Pilih paket, konfirmasi jadwal, dan selesaikan pembayaran lewat platform yang aman.</p>
+      </div>
+      <div class="about-step reveal">
+        <div class="about-step-num">03</div>
+        <h3>Mulai Terhubung</h3>
+        <p>Chat, call, atau ketemu langsung sesuai jadwal — tim kami tetap siaga membantu.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== TALENT DETAIL PAGE ========== -->
+<div id="page-talent-detail" class="page">
+  <div class="container" style="padding-top:2rem;padding-bottom:4rem">
+    <div style="margin-bottom:1.5rem">
+      <button class="btn-outline" onclick="showPage('talents')" style="gap:.5rem"><i class="fas fa-arrow-left"></i> Kembali ke Talent</button>
+    </div>
+    <div id="talentDetailContent"></div>
+  </div>
+</div>
+
+<!-- ========== ADMIN DASHBOARD ========== -->
+<div id="page-admin" class="page dashboard-page">
+  <div class="db-overlay" id="adminOverlay" onclick="closeDashSidebar('admin')"></div>
+  <div class="dashboard-sidebar" id="adminSidebar">
+    <div class="db-logo">
+      <span style="font-size:inherit;color:inherit;font-style:normal">Lovia</span><span>Admin</span>
+      <button class="db-logo-close" onclick="closeDashSidebar('admin')" title="Tutup menu">✕</button>
+    </div>
+    <div class="db-sidebar-avatar">
+      <div class="db-sidebar-avatar-icon"><i class="fas fa-crown"></i></div>
+      <div>
+        <div class="db-sidebar-avatar-label">Admin Lovia</div>
+        <div class="db-sidebar-avatar-sub">Super Administrator</div>
+      </div>
+    </div>
+    <nav class="db-nav">
+      <div class="db-nav-label">Menu Utama</div>
+      <a class="db-link active" onclick="showAdminTab('overview');closeDashSidebar('admin')"><i class="fas fa-chart-pie"></i> Overview</a>
+      <a class="db-link" onclick="showAdminTab('talents');closeDashSidebar('admin')"><i class="fas fa-users"></i> Kelola Talent</a>
+      <a class="db-link" onclick="showAdminTab('orders');closeDashSidebar('admin')"><i class="fas fa-shopping-bag"></i> Pesanan</a>
+      <a class="db-link" onclick="showAdminTab('inbox');closeDashSidebar('admin')"><i class="fas fa-envelope"></i> Pesan Masuk <span class="db-inbox-badge" id="adminInboxBadge"></span></a>
+      <div class="db-nav-label">Konten</div>
+      <a class="db-link" onclick="showAdminTab('pricelist');closeDashSidebar('admin')"><i class="fas fa-tags"></i> Pricelist</a>
+      <a class="db-link" onclick="showAdminTab('testimonials');closeDashSidebar('admin')"><i class="fas fa-star"></i> Testimoni</a>
+      <div class="db-nav-label">Sistem</div>
+      <a class="db-link" onclick="showAdminTab('settings');closeDashSidebar('admin')"><i class="fas fa-cog"></i> Pengaturan</a>
+    </nav>
+    <button class="db-logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+  </div>
+  <div class="db-main-wrap">
+    <div class="db-topbar">
+      <button class="db-hamburger" onclick="openDashSidebar('admin')" title="Buka menu"><i class="fas fa-bars"></i></button>
+      <div class="db-topbar-title">Lovia<span style="color:var(--pink-deep);font-style:italic">Admin</span></div>
+      <span class="db-topbar-user">👑 Admin</span>
+      <button class="btn-home" onclick="logout()"><i class="fas fa-sign-out-alt"></i> <span class="btn-home-txt">Logout</span></button>
+    </div>
+    <div class="dashboard-content" id="adminContent">
+      <div id="admin-tab-overview" class="admin-tab active"></div>
+      <div id="admin-tab-talents" class="admin-tab"></div>
+      <div id="admin-tab-orders" class="admin-tab"></div>
+      <div id="admin-tab-inbox" class="admin-tab"></div>
+      <div id="admin-tab-pricelist" class="admin-tab"></div>
+      <div id="admin-tab-testimonials" class="admin-tab"></div>
+      <div id="admin-tab-settings" class="admin-tab"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== TALENT DASHBOARD ========== -->
+<div id="page-talent-dash" class="page dashboard-page">
+  <div class="db-overlay" id="talentOverlay" onclick="closeDashSidebar('talent')"></div>
+  <div class="dashboard-sidebar" id="talentSidebar">
+    <div class="db-logo">
+      Lovia<span>Talent</span>
+      <button class="db-logo-close" onclick="closeDashSidebar('talent')" title="Tutup menu">✕</button>
+    </div>
+    <div class="db-sidebar-avatar" id="talentSidebarAvatar">
+      <div class="db-sidebar-avatar-icon"><i class="fas fa-star"></i></div>
+      <div>
+        <div class="db-sidebar-avatar-label" id="talentSidebarName">Talent</div>
+        <div class="db-sidebar-avatar-sub">Lovia Partner</div>
+      </div>
+    </div>
+    <nav class="db-nav">
+      <div class="db-nav-label">Menu</div>
+      <a class="db-link active" onclick="showTalentTab('overview');closeDashSidebar('talent')"><i class="fas fa-home"></i> Dashboard</a>
+      <a class="db-link" onclick="showTalentTab('orders');closeDashSidebar('talent')"><i class="fas fa-calendar-check"></i> Booking</a>
+      <a class="db-link" onclick="showTalentTab('inbox');closeDashSidebar('talent')"><i class="fas fa-envelope"></i> Pesan Masuk <span class="db-inbox-badge" id="talentInboxBadge"></span></a>
+      <a class="db-link" onclick="showTalentTab('earnings');closeDashSidebar('talent')"><i class="fas fa-wallet"></i> Pendapatan</a>
+      <div class="db-nav-label">Profil</div>
+      <a class="db-link" onclick="showTalentTab('profile');closeDashSidebar('talent')"><i class="fas fa-camera"></i> Kelola Foto</a>
+      <a class="db-link" onclick="showTalentTab('profile');closeDashSidebar('talent')"><i class="fas fa-user-edit"></i> Edit Profil</a>
+    </nav>
+    <button class="db-logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+  </div>
+  <div class="db-main-wrap">
+    <div class="db-topbar">
+      <button class="db-hamburger" onclick="openDashSidebar('talent')" title="Buka menu"><i class="fas fa-bars"></i></button>
+      <div class="db-topbar-title">Lovia<span style="color:var(--pink-deep);font-style:italic">Talent</span></div>
+      <span class="db-topbar-user" id="talentTopbarUser">✨ Talent</span>
+      <button class="btn-home" onclick="logout()"><i class="fas fa-sign-out-alt"></i> <span class="btn-home-txt">Logout</span></button>
+    </div>
+    <div class="dashboard-content" id="talentContent">
+      <div id="talent-tab-overview" class="talent-tab active"></div>
+      <div id="talent-tab-orders" class="talent-tab"></div>
+      <div id="talent-tab-inbox" class="talent-tab"></div>
+      <div id="talent-tab-profile" class="talent-tab"></div>
+      <div id="talent-tab-earnings" class="talent-tab"></div>
+    </div>
+  </div>
+</div>
+
+</div><!-- end appContent -->
+
+<!-- ===== FOOTER ===== -->
+<footer class="footer" id="mainFooter">
+  <div class="footer-content">
+    <div class="footer-brand">
+      <div class="footer-logo">Lovia<span>Partner</span></div>
+      <p>Platform companionship modern Indonesia. Aman, nyaman, profesional, dan terpercaya untuk pengalaman terbaik.</p>
+      <div class="footer-social">
+        <a href="https://www.instagram.com/sewapacarr?igsh=MWxqMnBhY21qczZpbg==&igsi=MWxqMnBhY21qczZpbg==" target="_blank" rel="noopener" title="Instagram"><i class="fab fa-instagram"></i></a>
+        <a href="#" title="TikTok"><i class="fab fa-tiktok"></i></a>
+        <a href="#" onclick="openMessageModal();return false;" title="Chat Admin"><i class="fas fa-comment-dots"></i></a>
+        <a href="#" title="Telegram"><i class="fab fa-telegram"></i></a>
+      </div>
+    </div>
+    <div class="footer-links">
+      <h4>Navigasi</h4>
+      <a href="#" onclick="showPage('landing')">Beranda</a>
+      <a href="#" onclick="showPage('talents')">Cari Talent</a>
+      <a href="#" onclick="showPage('pricelist')">Pricelist</a>
+      <a href="#" onclick="showPage('layanan')">Layanan</a>
+      <a href="#" onclick="showPage('daftar-talent')">Jadi Talent</a>
+      <a href="#" onclick="showPage('about')">Tentang Kami</a>
+    </div>
+    <div class="footer-links">
+      <h4>Layanan</h4>
+      <a href="#">Chatting</a>
+      <a href="#">Calling</a>
+      <a href="#">Video Call</a>
+      <a href="#">Offline Date</a>
+      <a href="#">PAP</a>
+      <a href="#">Mabar / Gaming</a>
+    </div>
+    <div class="footer-contact">
+      <h4>Kontak</h4>
+      <p><i class="fas fa-comment-dots"></i> <a href="#" onclick="openMessageModal();return false;">Chat Admin</a></p>
+      <p><i class="fas fa-envelope"></i> hello@loviapartner.id</p>
+      <p><i class="fab fa-instagram"></i> <a href="https://www.instagram.com/sewapacarr?igsh=MWxqMnBhY21qczZpbg==&igsi=MWxqMnBhY21qczZpbg==" target="_blank" rel="noopener">@sewapacarr</a></p>
+      <div class="disclaimer">
+        <i class="fas fa-info-circle"></i>
+        Platform ini hanya menyediakan layanan companionship profesional dengan batasan sopan dan tidak melayani konten vulgar atau aktivitas melanggar hukum.
+      </div>
+    </div>
+  </div>
+  <div class="developer-credit">
+    <span>Website Developer by</span>
+    <a href="https://benyoriki.com/" target="_blank" class="flicker-name">@benyoriki</a>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2026 Lovia Partner. All rights reserved. Made with <i class="fas fa-heart" style="color:#f472b6"></i> in Indonesia</p>
+  </div>
+</footer>
+
+<!-- FLOATING ELEMENTS -->
+<a href="#" class="float-wa" onclick="openMessageModal();return false;" title="Chat Admin">
+  <i class="fas fa-comment-dots"></i>
+</a>
+<audio id="bgMusic" loop>
+  <source src="music/romantic.mp3" type="audio/mpeg">
+</audio>
+<div class="float-music" id="floatMusic" onclick="toggleMusic()">
+  <i class="fas fa-music" id="musicIcon"></i>
+</div>
+<button class="back-to-top" id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="Kembali ke atas">
+  <i class="fas fa-arrow-up"></i>
+</button>
+<div class="scroll-progress" id="scrollProgress"></div>
+
+<!-- MODALS -->
+<div class="modal-overlay" id="loginModal" onclick="closeModal('loginModal')">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <button class="modal-close" onclick="closeModal('loginModal')"><i class="fas fa-times"></i></button>
+    <div class="modal-logo">Lovia<span>Partner</span></div>
+    <h3 style="text-align:center;margin-bottom:1.5rem">Masuk ke Akun</h3>
+    <div class="form-group"><label>Username</label><div class="icon-input"><i class="fas fa-user"></i><input type="text" id="loginUser" placeholder="username" /></div></div>
+    <div class="form-group"><label>Password</label><div class="icon-input"><i class="fas fa-lock"></i><input type="password" id="loginPass" placeholder="••••••••" /></div></div>
+    <button class="btn-primary" style="width:100%;margin-top:.5rem" onclick="handleLogin()">Masuk</button>
+    <div class="demo-hint"><i class="fas fa-circle-info"></i><span>Demo admin: <strong>admin</strong> / <strong>admin123</strong></span></div>
+    <div class="demo-hint"><i class="fas fa-circle-info"></i><span>Demo talent: <strong>ara01</strong> / <strong>ara123</strong></span></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="messageModal" onclick="closeModal('messageModal')">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <button class="modal-close" onclick="closeModal('messageModal')"><i class="fas fa-times"></i></button>
+    <div class="modal-logo" style="font-size:1.6rem"><i class="fas fa-envelope" style="color:var(--pink-deep)"></i></div>
+    <h3 style="text-align:center;margin-bottom:.35rem">Kirim Pesan</h3>
+    <p id="msgContextLabel" style="text-align:center;color:var(--text-muted);font-size:.83rem;margin-bottom:1.4rem">Pesan untuk Admin Lovia Partner</p>
+    <div class="form-group"><label>Nama</label><div class="icon-input"><i class="fas fa-user"></i><input type="text" id="msgName" placeholder="Nama kamu" /></div></div>
+    <div class="form-group"><label>Nomor WhatsApp / Kontak</label><div class="icon-input"><i class="fas fa-phone"></i><input type="text" id="msgContact" placeholder="08xxxxxxxxxx" /></div></div>
+    <div class="form-group"><label>Pesan</label><textarea id="msgText" rows="4" placeholder="Tulis pesanmu di sini..."></textarea></div>
+    <button class="btn-primary" style="width:100%;margin-top:.5rem" onclick="submitMessage()"><i class="fas fa-paper-plane"></i> Kirim Pesan</button>
+    <p style="text-align:center;color:var(--text-muted);font-size:.72rem;margin-top:.85rem">Pesanmu akan masuk ke inbox kami dan dibalas secepatnya 💌</p>
+  </div>
+</div>
+
+<div class="modal-overlay" id="bookingModal" onclick="closeModal('bookingModal')">
+  <div class="modal-box booking-modal" onclick="event.stopPropagation()">
+    <button class="modal-close" onclick="closeModal('bookingModal')"><i class="fas fa-times"></i></button>
+    <h3><i class="fas fa-calendar-plus"></i> Booking Talent</h3>
+    <div id="bookingContent"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="notifModal">
+  <div class="modal-box notif-box" onclick="event.stopPropagation()">
+    <div class="notif-header"><i class="fas fa-bell"></i> Notifikasi Baru!</div>
+    <div id="notifContent"></div>
+    <button class="btn-primary" style="width:100%;margin-top:1rem" onclick="closeModal('notifModal')">OK</button>
+  </div>
+</div>
+
+<!-- =============================================
+     PENYIMPANAN — SEMENTARA PAKAI LOCALSTORAGE
+     Firebase Realtime Database nonaktif sementara karena Google
+     mendeteksi aturan keamanannya belum di-set (semua orang bisa
+     baca/tulis). Begitu aturan Firebase sudah diperbaiki, blok ini
+     bisa dikembalikan ke firebase.database() seperti semula.
+     ============================================= -->
+<script>
+(function () {
+  const STORAGE_KEY = 'lovia_local_db_v1';
+
+  function loadDB() {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; }
+    catch (e) { return {}; }
+  }
+  function saveDB(obj) {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(obj)); } catch (e) { console.error('LocalDB save error:', e); }
+  }
+  function getAt(obj, parts) {
+    let cur = obj;
+    for (const p of parts) { if (cur == null || typeof cur !== 'object') return undefined; cur = cur[p]; }
+    return cur;
+  }
+  function setAt(obj, parts, val) {
+    if (parts.length === 0) return val;
+    let cur = obj;
+    for (let i = 0; i < parts.length - 1; i++) {
+      if (typeof cur[parts[i]] !== 'object' || cur[parts[i]] === null) cur[parts[i]] = {};
+      cur = cur[parts[i]];
+    }
+    if (val === null || val === undefined) delete cur[parts[parts.length - 1]];
+    else cur[parts[parts.length - 1]] = val;
+    return obj;
+  }
+
+  let _db = loadDB();
+  const _listeners = {}; // path -> [callback]
+
+  function makeSnapshot(val) {
+    return { exists: () => val !== undefined && val !== null, val: () => (val === undefined ? null : val) };
+  }
+
+  function notify(path) {
+    const parts = path.split('/').filter(Boolean);
+    // Notify listeners on this exact path and every ancestor path (mirrors Firebase's bubbling behavior)
+    for (const p of Object.keys(_listeners)) {
+      const pParts = p.split('/').filter(Boolean);
+      const isAncestorOrSelf = pParts.every((seg, i) => seg === parts[i]);
+      if (isAncestorOrSelf) {
+        const val = getAt(_db, pParts);
+        _listeners[p].forEach(cb => cb(makeSnapshot(val)));
+      }
+    }
+  }
+
+  function ref(path) {
+    path = path || '';
+    const parts = path.split('/').filter(Boolean);
+    return {
+      on(event, cb) {
+        _listeners[path] = _listeners[path] || [];
+        _listeners[path].push(cb);
+        cb(makeSnapshot(getAt(_db, parts)));
+      },
+      once() {
+        return Promise.resolve(makeSnapshot(getAt(_db, parts)));
+      },
+      set(val) {
+        setAt(_db, parts, val === undefined ? null : JSON.parse(JSON.stringify(val)));
+        saveDB(_db);
+        notify(path);
+        return Promise.resolve();
+      },
+      update(patch) {
+        const cur = getAt(_db, parts) || {};
+        const merged = Object.assign({}, cur, patch);
+        setAt(_db, parts, merged);
+        saveDB(_db);
+        notify(path);
+        return Promise.resolve();
+      },
+      remove() {
+        setAt(_db, parts, null);
+        saveDB(_db);
+        notify(path);
+        return Promise.resolve();
+      }
+    };
+  }
+
+  // Objek `db` ini punya API yang sama persis dengan firebase.database(),
+  // jadi seluruh kode di app.js (db.ref(...).on/set/once/update/remove)
+  // tetap jalan tanpa perlu diubah sama sekali.
+  window.db = { ref };
+  window.auth = null;
+  window.storage = null;
+})();
+</script>
+
+<script src="app.js"></script>
+<script src="patch.js?v=3"></script>
+<script src="pwa.js"></script>
+</body>
+</html>

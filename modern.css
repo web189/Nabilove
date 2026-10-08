@@ -1,0 +1,101 @@
+/* LoviaPartner — modern.css (dimuat terakhir). Ringan: tanpa backdrop-filter, tanpa animasi infinite, aman Chrome 109 / Windows 7. */
+:root{--r:20px;--r-lg:28px;--ease:cubic-bezier(.2,.7,.2,1)}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{font-feature-settings:"kern" 1;text-rendering:optimizeSpeed}
+h1,h2,h3{letter-spacing:-.025em;text-wrap:balance}
+:focus-visible{outline:3px solid var(--focus);outline-offset:3px;border-radius:10px}
+img{max-width:100%}
+
+/* --- Navbar: solid, bersih, tanpa blur --- */
+nav,.navbar{background:var(--nav-bg)!important;border-bottom:1px solid var(--border);box-shadow:0 1px 0 rgba(0,0,0,.02)}
+
+/* --- Tombol --- */
+.btn-primary{background:var(--grad);color:#fff;border:0;border-radius:999px;font-weight:700;box-shadow:0 8px 22px rgba(200,30,91,.30);transition:transform .18s var(--ease),box-shadow .18s var(--ease)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(200,30,91,.38)}
+.btn-primary:active,.btn-outline:active{transform:scale(.97)}
+.btn-outline{border-radius:999px;font-weight:700;border:1.5px solid var(--border);background:var(--bg-card);color:var(--text)}
+
+/* --- Kartu --- */
+.service-card,.why-card,.faq-item,.testi-card,.talent-card,.price-item-card,.package-card,.dash-stat-card{border-radius:var(--r);border:1px solid var(--border);background:var(--bg-card);box-shadow:var(--shadow-sm);transition:transform .22s var(--ease),box-shadow .22s var(--ease),border-color .22s}
+.service-card:hover,.talent-card:hover,.package-card:hover,.testi-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-md);border-color:var(--pink)}
+.talent-card img,.talent-card [class*="photo"]{transition:transform .5s var(--ease)}
+.talent-card:hover img{transform:scale(1.04)}
+
+/* --- FIX: Testimoni (teks tak terlihat) --- */
+section.testimonials{background:var(--bg-card2)}
+section.testimonials .section-header h2,section.testimonials .section-header p{color:var(--text)!important}
+section.testimonials .section-header p{color:var(--text-sec)!important}
+section.testimonials .testi-card{background:var(--bg-card)}
+section.testimonials .testi-card p{color:var(--text-sec)!important;font-style:normal;min-height:3em}
+section.testimonials .testi-header strong{color:var(--text)!important;display:block}
+.testi-card{display:flex;flex-direction:column;gap:.5rem}
+.testi-service{align-self:flex-start;margin-top:auto}
+
+/* --- FIX: CTA (tombol putih kosong + latar transparan) --- */
+.cta-section .cta-box{background:linear-gradient(135deg,#3b1148 0%,#6a1f5a 55%,#8c2a62 100%)!important;border:1px solid rgba(255,255,255,.14);border-radius:var(--r-lg);box-shadow:var(--shadow-lg)}
+.cta-box h2,.cta-box p{color:#fff!important}
+.cta-box h2 em{color:#f3d9a4!important}
+.cta-box .btn-outline{background:transparent!important;color:#fff!important;border:1.5px solid rgba(255,255,255,.65)!important}
+.cta-box .btn-outline:hover{background:#fff!important;color:#6a1f5a!important}
+
+
+/* --- Toast / banner prototipe jangan menutupi FAB --- */
+.toast,[class*="toast"]{max-width:min(92vw,420px);border-radius:16px}
+
+
+/* --- HP --- */
+@media (max-width:640px){
+ section{scroll-margin-top:72px}
+ .section-header h2{font-size:clamp(1.6rem,7vw,2.1rem)}
+ .btn-primary,.btn-outline{min-height:48px}
+ .testimonials-grid{gap:.9rem}
+ body{padding-bottom:env(safe-area-inset-bottom,0px)}
+}
+/* --- Desktop lebar --- */
+@media (min-width:1100px){
+ .testimonials-grid{gap:1.5rem}
+ .service-card,.why-card{padding:2rem}
+}
+/* --- Mode hemat: hormati preferensi pengguna --- */
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+@media (display-mode:standalone){.developer-credit{padding-bottom:calc(1rem + env(safe-area-inset-bottom,0px))}}
+
+/* ===== v5 ===== */
+/* Sidebar dasbor: gelap konsisten di mode terang & gelap (menu tak lagi pudar) */
+.dashboard-sidebar,.dashboard-sidebar .db-nav{background:var(--side-bg)!important;color:#ecdde6}
+.dashboard-sidebar .db-nav{background:transparent!important}
+.dashboard-sidebar .db-link{color:#ecdde6!important;font-weight:600}
+.dashboard-sidebar .db-link i{color:#d9b8ca;opacity:1}
+.dashboard-sidebar .db-link.active{background:rgba(255,123,166,.22)!important;color:#fff!important}
+.dashboard-sidebar .db-nav-label{color:#b79cab!important}
+.dashboard-sidebar .db-logo,.dashboard-sidebar .db-logo>span:first-child{color:#fff!important}
+.dashboard-sidebar .db-logo-close{background:rgba(255,255,255,.14);color:#fff;border:0}
+/* Angka KPI: tidak terpotong; kartu HP jadi vertikal */
+.kpi{min-width:0}.kpi>div:last-child{min-width:0}
+.kpi-val{font-size:clamp(1.15rem,5vw,1.6rem);white-space:nowrap;font-variant-numeric:tabular-nums}
+.status-badge{white-space:nowrap}
+@media (max-width:640px){.kpi{flex-direction:column;align-items:flex-start;gap:.6rem}.dash-stat-card{padding:1rem}}
+/* Toast pindah ke atas agar tak menutupi tombol aksi */
+.toast-container{top:calc(76px + env(safe-area-inset-top,0px))!important;bottom:auto!important;right:auto!important;left:50%!important;transform:translateX(-50%);align-items:center;width:min(92vw,360px)}
+/* Form konsisten dua mode */
+input,select,textarea{background:var(--bg-card);color:var(--text);border-color:var(--border)}
+input::placeholder,textarea::placeholder{color:var(--text-muted)}
+select option{background:var(--bg-card);color:var(--text)}
+::selection{background:var(--pink-light);color:var(--text)}
+/* Hero & permukaan 2026: mesh lembut statis (ringan) */
+.hero{background:radial-gradient(60% 50% at 15% 10%,var(--hero-a),transparent 70%),radial-gradient(50% 45% at 90% 20%,var(--hero-b),transparent 70%),radial-gradient(55% 45% at 60% 100%,var(--hero-c),transparent 70%),var(--bg)}
+.section{padding-top:clamp(3rem,7vw,5.5rem);padding-bottom:clamp(3rem,7vw,5.5rem)}
+.section-header h2{font-size:clamp(1.8rem,4.2vw,3rem)}
+.talent-card,.service-card,.why-card,.package-card{border-radius:24px;overflow:hidden}
+.dash-section,.dash-stat-card{border-radius:22px}
+.db-topbar{box-shadow:0 1px 0 var(--border)}
+.theme-toggle,.db-theme{transition:transform .2s var(--ease),background .2s}
+.theme-toggle:hover,.db-theme:hover{transform:rotate(18deg)}
+/* Tombol Pasang Aplikasi (navbar, dasbor, menu, footer) */
+.pwa-btn{display:none;align-items:center;gap:.45rem;border:1.5px solid var(--pink-deep);background:var(--pink-light);color:var(--pink-deep);border-radius:999px;padding:.5rem .95rem;font:700 .82rem var(--font-body,sans-serif);cursor:pointer;white-space:nowrap;transition:transform .15s,background .2s,color .2s}
+.pwa-btn.show{display:inline-flex}
+.pwa-btn:hover{background:var(--pink-deep);color:#fff}.pwa-btn:active{transform:scale(.96)}
+.pwa-btn.icon-only{width:40px;height:40px;padding:0;justify-content:center}
+.pwa-btn.block{width:100%;justify-content:center;padding:.8rem 1rem;margin-top:.75rem}
+@media (max-width:640px){.nav-actions .pwa-btn .lbl{display:none}.nav-actions .pwa-btn{width:40px;height:40px;padding:0;justify-content:center}}
+@media (min-width:1100px){.talent-grid,.talents-grid{gap:1.5rem}}
