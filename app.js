@@ -56,6 +56,9 @@ let _photosCache   = {};
 let _inboxCache    = {}; // { admin: [...], talent_t001: [...], ... }
 
 // Listener aktif untuk auto-refresh UI
+function isLive(){return window.__fbLive===true}
+function isWiped(){try{return localStorage.getItem('nabi_wiped')==='1'}catch(e){return false}}
+function emptyPrices(){var o={};Object.keys(DEFAULT_PRICELIST).forEach(function(k){o[k]=[]});return o}
 function initFirebaseListeners() {
   // ── TALENTS ──
   db.ref('talents').on('value', snap => {
@@ -64,8 +67,9 @@ function initFirebaseListeners() {
       _talentsCache = Object.values(val);
     } else {
       // Jika database kosong, seed dari DEFAULT
+      if (isWiped() || isLive()) { _talentsCache = []; } else {
       _talentsCache = DEFAULT_TALENTS;
-      DEFAULT_TALENTS.forEach(t => db.ref('talents/' + t.id).set(t));
+      DEFAULT_TALENTS.forEach(t => db.ref('talents/' + t.id).set(t)); }
     }
     // Refresh UI jika ada halaman yang terbuka
     const talentGrid = document.getElementById('talentGrid');
@@ -77,8 +81,8 @@ function initFirebaseListeners() {
   // ── ORDERS ──
   db.ref('orders').on('value', snap => {
     const val = snap.val();
-    _ordersCache = val ? Object.values(val).sort((a,b) => (b.createdAt||0)-(a.createdAt||0)) : DEFAULT_ORDERS;
-    if (!val) {
+    _ordersCache = val ? Object.values(val).sort((a,b) => (b.createdAt||0)-(a.createdAt||0)) : ((isWiped() || isLive()) ? [] : DEFAULT_ORDERS);
+    if (!val && !isWiped() && !isLive()) {
       DEFAULT_ORDERS.forEach(o => db.ref('orders/' + o.id).set(o));
     }
   });
@@ -89,8 +93,9 @@ function initFirebaseListeners() {
     if (val) {
       _priceCache = val;
     } else {
+      if (isWiped() && !isLive()) { _priceCache = emptyPrices(); } else {
       _priceCache = DEFAULT_PRICELIST;
-      db.ref('pricelist').set(DEFAULT_PRICELIST);
+      if (!isLive()) db.ref('pricelist').set(DEFAULT_PRICELIST); }
     }
   });
 
@@ -105,11 +110,12 @@ function initFirebaseListeners() {
       delete rest.__version;
       _testiCache = Object.values(rest);
     } else {
+      if (isWiped() && !isLive()) { _testiCache = []; return; }
       _testiCache = DEFAULT_TESTIMONIALS;
       const seed = {};
       DEFAULT_TESTIMONIALS.forEach((t,i) => { seed['t'+i] = t; });
       seed.__version = TESTIMONIALS_VERSION;
-      db.ref('testimonials').set(seed);
+      if (!isLive()) db.ref('testimonials').set(seed);
     }
     const tGrid = document.getElementById('testimonialsGrid');
     if (tGrid && tGrid.children.length > 0) renderTestimonials();
@@ -121,7 +127,7 @@ function initFirebaseListeners() {
   // took priority over code-level photos) get cleared exactly once.
   db.ref('customPhotos/__meta/version').once('value').then(vsnap => {
     const storedVersion = vsnap.val() || 0;
-    if (storedVersion < CUSTOM_PHOTOS_RESET_VERSION) {
+    if (storedVersion < CUSTOM_PHOTOS_RESET_VERSION && !isLive()) {
       db.ref('customPhotos').set({ __meta: { version: CUSTOM_PHOTOS_RESET_VERSION } });
     }
     db.ref('customPhotos').on('value', snap => {
@@ -337,8 +343,8 @@ const DEFAULT_TALENTS = [
    ig:'@ara.salsabila',tiktok:'@ara.sal',verified:true,username:'ara01',password:'ara123'},
 
   {id:'t002',name:'Nara Putri',nickname:'Nara',age:20,gender:'Perempuan',location:'Bandung',
-   bio:'Music lover & gaming enthusiast! Yuk mabar bareng atau sekadar dengerin curhat. Aku teman ngobrol yang gak pernah boring 🎵',
-   hobbies:'Gaming, Music, Anime',services:['Chatting','Calling','Mabar','Video Call'],
+   bio:'Music lover & gaming enthusiast! Yuk ngobrol atau sekadar curhat. Aku teman ngobrol yang gak pernah boring 🎵',
+   hobbies:'Gaming, Music, Anime',services:['Chatting','Calling','Video Call'],
    schedule:['Pagi (06-12)','Malam (20-24)'],
    rating:4.8,bookings:189,price:'26K',status:'online',avatar:'🎵',
    ig:'@naraputri_',tiktok:'@nara.music',verified:true,username:'nara01',password:'nara123'},
@@ -387,7 +393,7 @@ const DEFAULT_TALENTS = [
 
   {id:'t009',name:'Kira Mahesa',nickname:'Kira',age:24,gender:'Laki-laki',location:'Bali',
    bio:'Pro gamer yang bisa bantu carry rank kamu! Juga seru buat teman jalan atau ngobrol soal game & lifestyle 🎮',
-   hobbies:'Gaming, Surfing, Photography',services:['Mabar','Chatting','Offline Date'],
+   hobbies:'Gaming, Surfing, Photography',services:['Chatting','Video Call','Offline Date'],
    schedule:['Pagi (06-12)','Malam (20-24)'],
    rating:4.8,bookings:278,price:'26K',status:'online',avatar:'🎮',
    ig:'@kira.mahesa',tiktok:'@kira_pro',verified:true,username:'kira01',password:'kira123'},
@@ -409,13 +415,13 @@ const DEFAULT_TALENTS = [
 
 // Bump this whenever DEFAULT_TESTIMONIALS content below changes, so returning
 // visitors' Firebase data (seeded from an older version) gets refreshed too.
-const TESTIMONIALS_VERSION = 2;
+const TESTIMONIALS_VERSION = 3;
 const DEFAULT_TESTIMONIALS = [
   {name:'Rafi A.',rating:5,text:'Anjay respon Ara gercep banget, chat-nya nyambung mulu ga pernah garing. Auto langganan sih ini mah!',service:'Chatting 7 Hari'},
-  {name:'Bayu P.',rating:5,text:'Mabar bareng Kira tuh gokil parah, skill-nya no debat. Rank auto naik, worth it banget dah!',service:'Mabar Session'},
+  {name:'Bayu P.',rating:5,text:'Ngobrol bareng Kira tuh seru banget, nyambung dan ramah. Worth it banget dah!',service:'Video Call'},
   {name:'Dimas R.',rating:5,text:'Offline date sama Dira vibes-nya enak banget, orangnya asik dan tau spot-spot kece. Recommended banget bestie!',service:'Offline Date 4 Jam'},
   {name:'Angga W.',rating:4,text:'Prosesnya smooth, talent-nya responsif, ga ribet sama sekali. Gaskeun order lagi minggu depan!',service:'Video Call 30 Mnt'},
-  {name:'Reza S.',rating:5,text:'Udah cobain banyak platform tapi Lovia Partner tetep juara. Real recommended, ga php sama sekali!',service:'PDKT Package 2'},
+  {name:'Reza S.',rating:5,text:'Udah cobain banyak platform tapi Nabilove tetep juara. Real recommended, ga php sama sekali!',service:'PDKT Package 2'},
   {name:'Fajar K.',rating:5,text:'Ngobrol sama Reva santai abis, sejam berasa lima menit doang. Worth every rupiah, gaskeun!',service:'Calling 60 Menit'},
 ];
 
@@ -425,7 +431,6 @@ const DEFAULT_PRICELIST = {
   videocall:[{label:'15 Menit',price:'30.000',popular:false},{label:'30 Menit',price:'55.000',popular:false},{label:'60 Menit',price:'95.000',popular:true},{label:'90 Menit',price:'125.000',popular:false},{label:'120 Menit',price:'160.000',popular:false}],
   offline:[{label:'2 Jam',price:'150.000',popular:false},{label:'4 Jam',price:'270.000',popular:true},{label:'6 Jam',price:'400.000',popular:false},{label:'8 Jam',price:'530.000',popular:false},{label:'Tambahan 1 Jam',price:'100.000',popular:false}],
   pap:[{label:'1x PAP',price:'10.000',popular:false}],
-  mabar:[{label:'1x Mabar',price:'10.000',popular:false}],
   paket:[
     {label:'Relationship 1',price:'220.000',popular:false,items:['Chat 3 Hari','Offline Date 1x (2 Jam)','PAP 1x','Call 15 Menit'],featured:false},
     {label:'Relationship 2',price:'400.000',popular:true,items:['Chat 7 Hari','Offline Date 1x (4 Jam)','PAP 3x','Call 15 Menit'],featured:false},
@@ -441,7 +446,7 @@ const DEFAULT_PRICELIST = {
 
 const DEFAULT_ORDERS = [
   {id:'ORD001',customer:'Amel R.',wa:'0812-0000-0001',talent:'Ara Salsabila',service:'Chatting 7 Hari',date:'2026-05-01',status:'Selesai',total:'93.000',createdAt:1746057600000},
-  {id:'ORD002',customer:'Budi S.',wa:'0812-0000-0002',talent:'Kira Mahesa',service:'Mabar 1x',date:'2026-05-03',status:'Aktif',total:'10.000',createdAt:1746230400000},
+  {id:'ORD002',customer:'Budi S.',wa:'0812-0000-0002',talent:'Kira Mahesa',service:'Video Call 30 Menit',date:'2026-05-03',status:'Aktif',total:'10.000',createdAt:1746230400000},
   {id:'ORD003',customer:'Citra M.',wa:'0812-0000-0003',talent:'Dira Cantika',service:'Offline Date 4 Jam',date:'2026-05-10',status:'Menunggu',total:'270.000',createdAt:1746835200000},
   {id:'ORD004',customer:'Dodi F.',wa:'0812-0000-0004',talent:'Reva Anindita',service:'Video Call 30 Mnt',date:'2026-05-08',status:'Selesai',total:'55.000',createdAt:1746662400000},
   {id:'ORD005',customer:'Erlin P.',wa:'0812-0000-0005',talent:'Luna Safira',service:'PDKT 2',date:'2026-05-12',status:'Aktif',total:'165.000',createdAt:1747008000000},
@@ -519,7 +524,7 @@ function initLoading() {
     }
   }
 
-  // Rotate loading messages across the 7s duration — pesan yang lebih hangat & personal
+  // Rotate loading messages across the 4s duration — pesan yang lebih hangat & personal
   const messages = [
     'Mempersiapkan pengalaman terbaik...',
     'Setiap koneksi berawal dari satu sapaan hangat 💕',
@@ -535,13 +540,13 @@ function initLoading() {
       textEl.style.opacity = 0;
       setTimeout(() => { textEl.textContent = messages[mi]; textEl.style.opacity = 1; }, 200);
     }
-  }, 1350);
+  }, 900);
 
   setTimeout(() => {
     clearInterval(msgTimer);
     const ls = document.getElementById('loadingScreen');
     if (ls) ls.classList.add('hidden');
-  }, 1500);
+  }, 4000);
 }
 
 function initCursor() {
@@ -626,7 +631,7 @@ function sendInboxMessage({name, contact, message, talentId, talentName, source}
 function openMessageModal(talentId, talentName, presetText) {
   window._msgContext = { talentId: talentId || null, talentName: talentName || null };
   const label = document.getElementById('msgContextLabel');
-  if (label) label.textContent = talentName ? `Pesan untuk ${talentName}` : 'Pesan untuk Admin Lovia Partner';
+  if (label) label.textContent = talentName ? `Pesan untuk ${talentName}` : 'Pesan untuk Admin Nabilove';
   const ta = document.getElementById('msgText');
   if (ta) ta.value = presetText || '';
   openModal('messageModal');
@@ -1039,8 +1044,7 @@ function renderPricelist() {
     {key:'videocall',label:'🎥 Video Call',desc:'Tatap muka virtual'},
     {key:'offline',label:'📍 Offline Date',desc:'Jalan bareng'},
     {key:'pap',label:'📸 PAP',desc:'Photo & proof'},
-    {key:'mabar',label:'🎮 Mabar',desc:'Main game bareng'},
-  ];
+    ];
   const filtered = currentPriceFilter==='all' ? SERVICES : SERVICES.filter(s=>s.key===currentPriceFilter);
   el.innerHTML = filtered.map(s => {
     const items = pl[s.key] || [];
@@ -1279,7 +1283,7 @@ function submitRegister() {
   }).catch(e => console.error('talentApplications error:', e));
 
   toast('Pendaftaran berhasil! 🎉', 'success');
-  showNotifModal(`Pendaftaran berhasil!<br><br>Admin akan menghubungi via WhatsApp dalam 1×24 jam.<br><br><strong>Username:</strong> ${newT.username}<br><strong>Password:</strong> ${pass}<br><small style="color:var(--text-muted)">Simpan dengan aman</small>`, '🌟');
+  showNotifModal(`Pendaftaran berhasil!<br><br>Admin akan menghubungi via WhatsApp dalam 1×24 jam.<br><br>Data kamu masuk ke antrean seleksi admin.`, '🌟');
   setTimeout(() => showPage('landing'), 3000);
 }
 
@@ -1310,7 +1314,7 @@ function handleLogin() {
   if (!user.trim()||!pass.trim()) { toast('Isi username dan password!','error'); return; }
 
   if (user==='admin' && pass==='admin123') {
-    currentUser = {role:'admin', name:'Admin Lovia', username:'admin'};
+    currentUser = {role:'admin', name:'Admin Nabilove', username:'admin'};
     lsSet('lovia_session', currentUser);
     closeModal('loginModal');
     toast('Selamat datang, Admin! 👑','success');
@@ -1486,7 +1490,7 @@ function ordersTable(orders, editable=false) {
 
 function renderAdminPricelist(el) {
   const pl = getPricelist();
-  const cats=[['chatting','💬 Chatting'],['calling','📞 Calling'],['videocall','🎥 Video Call'],['offline','📍 Offline Date'],['pap','📸 PAP'],['mabar','🎮 Mabar']];
+  const cats=[['chatting','💬 Chatting'],['calling','📞 Calling'],['videocall','🎥 Video Call'],['offline','📍 Offline Date'],['pap','📸 PAP'],];
   el.innerHTML = `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:.75rem"><h2 style="font-family:var(--font-display)">Kelola Pricelist 💰</h2><span style="font-size:.8rem;color:var(--text-muted)">Edit langsung → tersimpan ke Firebase</span></div>
     ${cats.map(([cat,label])=>`<div class="dash-section"><h3 style="display:flex;align-items:center;justify-content:space-between">${label}<button class="btn-sm" onclick="addPrice('${cat}')"><i class="fas fa-plus"></i> Tambah</button></h3>
     <div class="table-scroll"><table class="admin-table"><thead><tr><th>Label</th><th>Harga (Rp)</th><th>Populer</th><th>Hapus</th></tr></thead><tbody>
@@ -1547,7 +1551,7 @@ function renderAdminSettings(el) {
   el.innerHTML = `<h2 style="font-family:var(--font-display);margin-bottom:1.5rem">Pengaturan ⚙️</h2>
     <div class="admin-2col-grid">
       <div class="dash-section"><h3>🔐 Akun Admin</h3><div style="font-size:.88rem;display:flex;flex-direction:column;gap:.5rem"><div>Username: <strong>admin</strong></div><div>Password: <strong>admin123</strong></div><div>Role: <strong>Super Admin</strong></div></div></div>
-      <div class="dash-section"><h3>📊 Platform</h3><div style="font-size:.88rem;display:flex;flex-direction:column;gap:.5rem"><div>Versi: <strong>Lovia Partner v3.0</strong></div><div>Storage: <strong>Firebase Realtime Database ✅</strong></div><div>Deploy: <strong>GitHub Pages Ready</strong></div></div></div>
+      <div class="dash-section"><h3>📊 Platform</h3><div style="font-size:.88rem;display:flex;flex-direction:column;gap:.5rem"><div>Versi: <strong>Nabilove v3.0</strong></div><div>Storage: <strong>Firebase Realtime Database ✅</strong></div><div>Deploy: <strong>GitHub Pages Ready</strong></div></div></div>
       <div class="dash-section"><h3>🎨 Tema</h3><div style="display:flex;gap:.75rem"><button class="btn-sm" onclick="document.documentElement.setAttribute('data-theme','light');localStorage.setItem('lovia_theme','light');updateThemeIcon('light');toast('Terang aktif','info')">☀️ Terang</button><button class="btn-sm" onclick="document.documentElement.setAttribute('data-theme','dark');localStorage.setItem('lovia_theme','dark');updateThemeIcon('dark');toast('Gelap aktif','info')">🌙 Gelap</button></div></div>
       <div class="dash-section"><h3>🗑️ Reset Data Firebase</h3><p style="font-size:.82rem;color:var(--text-muted);margin-bottom:1rem">Hapus semua data dari Firebase (tidak bisa dibatalkan)</p><button class="btn-outline" onclick="resetData()" style="border-color:#ef4444;color:#ef4444"><i class="fas fa-redo"></i> Reset Semua</button></div>
     </div>`;
@@ -2026,9 +2030,9 @@ const NOTIF_MESSAGES = [
   {
     emoji: '🎮',
     badge: '🟢 Online Sekarang',
-    title: 'Kira Mahesa siap Mabar!',
+    title: 'Kira Mahesa siap ngobrol!',
     desc: 'Rating tertinggi, slot terbatas!',
-    cta: 'Mabar Sekarang',
+    cta: 'Ngobrol Sekarang',
     ctaUrl: null,
     action: () => showPage('talents')
   },

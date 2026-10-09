@@ -5,7 +5,7 @@ function installed(){return (window.matchMedia&&matchMedia('(display-mode: stand
 function guide(){
  if(ios)return 'Ketuk ikon Bagikan, lalu pilih "Tambah ke Layar Utama".';
  if(/android/i.test(ua))return 'Buka menu browser (⋮), lalu pilih "Instal aplikasi" atau "Tambahkan ke layar utama".';
- return 'Di Chrome/Edge: klik ikon instal di kanan address bar, atau menu ⋮ → "Instal LoviaPartner". Situs harus dibuka lewat https.';}
+ return 'Di Chrome/Edge: klik ikon instal di kanan address bar, atau menu ⋮ → "Instal Nabilove". Situs harus dibuka lewat https.';}
 function click(){if(dp){dp.prompt();dp.userChoice.then(function(){dp=null;sync()})}else{alert(guide())}}
 function sync(){var on=!installed();btns.forEach(function(b){b.classList.toggle('show',on)})}
 function make(cls,label){var b=document.createElement('button');b.type='button';b.className='pwa-btn '+(cls||'');b.title='Pasang aplikasi';b.innerHTML='<i class="fas fa-download"></i><span class="lbl">'+(label||'Pasang')+'</span>';b.onclick=click;btns.push(b);return b}

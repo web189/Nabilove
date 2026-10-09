@@ -1,0 +1,54 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "admins": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": false
+      }
+    },
+    "talents": {
+      ".read": true,
+      ".write": "auth != null && root.child('admins').child(auth.uid).val() === true"
+    },
+    "pricelist": {
+      ".read": true,
+      ".write": "auth != null && root.child('admins').child(auth.uid).val() === true"
+    },
+    "testimonials": {
+      ".read": true,
+      ".write": "auth != null && root.child('admins').child(auth.uid).val() === true"
+    },
+    "customPhotos": {
+      ".read": true,
+      ".write": "auth != null && root.child('admins').child(auth.uid).val() === true"
+    },
+    "orders": {
+      ".read": "auth != null && root.child('admins').child(auth.uid).val() === true",
+      ".write": "auth != null && root.child('admins').child(auth.uid).val() === true",
+      "$id": {
+        ".write": "!data.exists()",
+        ".validate": "auth != null && root.child('admins').child(auth.uid).val() === true || (newData.hasChildren(['customer','wa','talent','service','status','total']) && newData.child('status').val() === 'Menunggu' && newData.child('customer').isString() && newData.child('customer').val().length <= 100 && newData.child('wa').isString() && newData.child('wa').val().length <= 30)"
+      }
+    },
+    "inbox": {
+      ".read": "auth != null && root.child('admins').child(auth.uid).val() === true",
+      ".write": "auth != null && root.child('admins').child(auth.uid).val() === true",
+      "$box": {
+        "$id": {
+          ".write": "!data.exists()",
+          ".validate": "auth != null && root.child('admins').child(auth.uid).val() === true || (newData.hasChildren(['name','contact','message']) && newData.child('message').isString() && newData.child('message').val().length <= 1000 && newData.child('name').val().length <= 100 && newData.child('read').val() === false)"
+        }
+      }
+    },
+    "talentApplications": {
+      ".read": "auth != null && root.child('admins').child(auth.uid).val() === true",
+      ".write": "auth != null && root.child('admins').child(auth.uid).val() === true",
+      "$id": {
+        ".write": "!data.exists()",
+        ".validate": "auth != null && root.child('admins').child(auth.uid).val() === true || (newData.hasChildren(['name','wa','status']) && newData.child('status').val() === 'Menunggu Seleksi' && newData.child('name').isString() && newData.child('name').val().length <= 100 && newData.child('wa').val().length <= 30)"
+      }
+    }
+  }
+}
