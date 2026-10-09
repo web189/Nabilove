@@ -56,6 +56,12 @@ let _photosCache   = {};
 let _inboxCache    = {}; // { admin: [...], talent_t001: [...], ... }
 
 // Listener aktif untuk auto-refresh UI
+function nbEsc(v){
+  if (typeof v === 'string') return v.replace(/[&<>"'`]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;', '`': '&#96;' }[c]; });
+  if (Array.isArray(v)) return v.map(nbEsc);
+  if (v && typeof v === 'object') { var o = {}; Object.keys(v).forEach(function (k) { o[k] = nbEsc(v[k]); }); return o; }
+  return v;
+}
 function isLive(){return window.__fbLive===true}
 function isWiped(){try{return localStorage.getItem('nabi_wiped')==='1'}catch(e){return false}}
 function emptyPrices(){var o={};Object.keys(DEFAULT_PRICELIST).forEach(function(k){o[k]=[]});return o}
@@ -81,7 +87,7 @@ function initFirebaseListeners() {
   // ── ORDERS ──
   db.ref('orders').on('value', snap => {
     const val = snap.val();
-    _ordersCache = val ? Object.values(val).sort((a,b) => (b.createdAt||0)-(a.createdAt||0)) : ((isWiped() || isLive()) ? [] : DEFAULT_ORDERS);
+    _ordersCache = val ? Object.values(nbEsc(val)).sort((a,b) => (b.createdAt||0)-(a.createdAt||0)) : ((isWiped() || isLive()) ? [] : DEFAULT_ORDERS);
     if (!val && !isWiped() && !isLive()) {
       DEFAULT_ORDERS.forEach(o => db.ref('orders/' + o.id).set(o));
     }
@@ -140,7 +146,7 @@ function initFirebaseListeners() {
   });
   // ── INBOX (pesan masuk, menggantikan redirect WhatsApp) ──
   db.ref('inbox').on('value', snap => {
-    _inboxCache = snap.val() || {};
+    _inboxCache = nbEsc(snap.val() || {});
     updateInboxBadge();
     const adminInboxEl = document.getElementById('admin-tab-inbox');
     if (adminInboxEl && adminInboxEl.classList.contains('active')) renderAdminInbox(adminInboxEl);
