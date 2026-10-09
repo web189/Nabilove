@@ -249,3 +249,11 @@ select option{background:var(--bg-card);color:var(--text)}
 @media (min-width:901px){.db-topbar-title{display:none}}
 /* judul bagian */
 .section-header h2{letter-spacing:-.02em}
+
+/* ===== v13: kursor mouse selalu tampil (PC) ===== */
+html,body{cursor:auto}
+a,button,summary,select,label[for],[role="button"],[onclick],.talent-card,.service-card,.faq-item,.faq-q,.custom-select-trigger,.cs-option,.nb-sw,.nb-btn,.mini,.pw-eye,input[type="checkbox"],input[type="radio"],input[type="range"],input[type="file"]{cursor:pointer}
+input[type="text"],input[type="password"],input[type="email"],input[type="number"],input[type="search"],input[type="tel"],textarea{cursor:text}
+button:disabled,.mini[disabled]{cursor:not-allowed}
+.nb-crop{cursor:grab}.nb-crop:active{cursor:grabbing}
+.cursor-dot,.cursor-ring{display:none!important}

@@ -1,0 +1,56 @@
+/* Nabilove — packages.css : Paket Harga & Promo (beranda + pricelist + admin) */
+.pk-none, .pk-filtered-out { display: none !important; }
+.pk-wrap { display: flex; flex-direction: column; gap: 2.6rem; }
+.pk-group-head { display: flex; align-items: center; gap: .8rem; margin-bottom: 1.7rem; }
+.pk-group-head h3 { font-family: var(--font-display); font-size: 1.35rem; font-weight: 700; color: var(--pink-deep); letter-spacing: .02em; }
+.pk-group-head::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+.pk-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(235px, 1fr)); gap: 2.1rem 1.3rem; align-items: stretch; }
+.pk-grid.rows { grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 1.2rem; }
+.pk-grid + .pk-grid { margin-top: 1.6rem; }
+
+.pk-card { position: relative; display: flex; flex-direction: column; background: var(--bg-card); color: var(--text);
+  border: 1.5px solid var(--pk-line, var(--border)); border-radius: 18px; box-shadow: var(--shadow-sm); transition: transform .2s, box-shadow .2s; }
+.pk-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+.pk-card.is-pop { box-shadow: 0 0 0 3px color-mix(in srgb, var(--pk) 25%, transparent), var(--shadow-md); }
+
+/* gaya PDKT: label tab + pita harga */
+.pk-tab { padding: 1.6rem 0 1.2rem; }
+.pk-label { position: absolute; top: -16px; left: 50%; transform: translateX(-50%); min-width: 58%; max-width: 86%; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  background: var(--pk); color: var(--pk-ink); font-weight: 800; font-size: .98rem; letter-spacing: .05em; text-transform: uppercase; padding: .55rem 1.1rem; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,.18); }
+.pk-flags { display: flex; justify-content: space-between; align-items: center; gap: .4rem; padding: 0 .9rem .7rem; flex-wrap: wrap; min-height: 1.9rem; }
+.pk-flag { font-size: .68rem; font-weight: 800; padding: .22rem .65rem; border-radius: 999px; letter-spacing: .02em; }
+.pk-flag.pop { background: #fff3d6; color: #8a5a00; }
+.pk-flag.promo { background: var(--pk); color: var(--pk-ink); margin-left: auto; }
+.pk-band { background: var(--pk); color: var(--pk-ink); text-align: center; padding: .95rem 1rem; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.05; }
+.pk-band b { font-size: 2.3rem; font-weight: 800; letter-spacing: .01em; }
+.pk-band s, .pk-row-price s { font-size: .85rem; font-weight: 600; opacity: .75; margin-bottom: .15rem; }
+.pk-list { list-style: none; margin: 0; padding: 1.15rem 1.5rem .8rem; display: flex; flex-direction: column; gap: .55rem; flex: 1; }
+.pk-list li { position: relative; padding-left: 1.15rem; font-weight: 800; font-size: .86rem; letter-spacing: .02em; text-transform: uppercase; line-height: 1.3; }
+.pk-list li::before { content: ''; position: absolute; left: 0; top: .42em; width: 6px; height: 6px; border-radius: 50%; background: var(--text); }
+.pk-cta { margin: .7rem 1.3rem 0; min-height: 46px; border-radius: 999px; border: 1.5px solid var(--pk-line, var(--border)); background: transparent; color: var(--pk-text, var(--text));
+  font: 800 .95rem var(--font-body, sans-serif); cursor: pointer; transition: background .18s, color .18s; }
+.pk-cta:hover, .pk-cta:focus-visible { background: var(--pk); color: var(--pk-ink); border-color: var(--pk); }
+
+/* gaya Relationship: judul kiri, harga kanan */
+.pk-row { padding: 1.2rem 1.35rem 1.25rem; border-left: 6px solid var(--pk); }
+.pk-row-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; }
+.pk-row-head h4 { font-size: 1.02rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+.pk-row-price { display: flex; flex-direction: column; align-items: flex-end; line-height: 1.1; }
+.pk-row-price b { font-size: 1.35rem; font-weight: 800; letter-spacing: .04em; color: var(--pk-text, var(--text)); }
+.pk-row .pk-flags { padding: .6rem 0 0; min-height: 0; justify-content: flex-start; }
+.pk-row .pk-flag.promo { margin-left: 0; }
+.pk-row .pk-list { padding: .9rem 0 .4rem; }
+.pk-row .pk-cta { margin: .7rem 0 0; align-self: flex-start; padding: 0 1.8rem; }
+
+/* section di beranda */
+.packages-section .pk-more { text-align: center; margin-top: 2.2rem; }
+
+/* admin */
+.pk-dot { width: 22px; height: 22px; border-radius: 50%; flex: 0 0 auto; border: 2px solid var(--border); margin: 0 .5rem; }
+.nb-promo-i s { opacity: .7; }
+.mini[disabled] { opacity: .35; cursor: default; }
+
+@media (max-width: 480px) {
+  .pk-band b { font-size: 2rem; }
+  .pk-grid, .pk-grid.rows { grid-template-columns: 1fr; }
+}

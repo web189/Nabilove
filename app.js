@@ -557,6 +557,7 @@ function initLoading() {
 }
 
 function initCursor() {
+  return; /* kursor custom dimatikan: memakai kursor asli sistem (lebih ringan & aman di semua PC) */
   const isTouchDevice = ('ontouchstart' in window) || navigator.maxTouchPoints > 0 ||
     !window.matchMedia('(hover: hover) and (pointer: fine)').matches;
   if (window.innerWidth <= 768 || isTouchDevice) return;

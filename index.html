@@ -41,9 +41,10 @@
   <link rel="icon" href="favicon.png" type="image/png">
   <link rel="apple-touch-icon" href="icon-192.png">
   <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="stylesheet" href="style.css" />
-  <link rel="stylesheet" href="theme.css?v=3" />
-  <link rel="stylesheet" href="modern.css?v=12" />
+  <link rel="stylesheet" href="style.css?v=14" />
+  <link rel="stylesheet" href="theme.css?v=14" />
+  <link rel="stylesheet" href="modern.css?v=13" />
+  <link rel="stylesheet" href="packages.css?v=1" />
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon-192.png">
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -56,8 +57,6 @@
 <body>
 
 <!-- CUSTOM CURSOR -->
-<div class="cursor-dot" id="cursorDot"></div>
-<div class="cursor-ring" id="cursorRing"></div>
 
 <!-- LOADING SCREEN -->
 <div class="loading-screen" id="loadingScreen">
@@ -166,6 +165,19 @@
         <div class="service-card reveal" onclick="showPage('layanan')"><div class="sc-icon"><i class="fas fa-mug-hot"></i></div><h3>Offline Date</h3><p>Jalan bareng ke tempat favoritmu</p></div>
         <div class="service-card featured reveal" onclick="showPage('pricelist')"><div class="sc-icon"><i class="fas fa-camera"></i></div><h3>PAP</h3><p>Foto & bukti keseruan bareng</p></div>
       </div>
+    </div>
+  </section>
+
+  <!-- PAKET HARGA & PROMO -->
+  <section class="section packages-section pk-none" id="landingPackages">
+    <div class="container">
+      <div class="section-header reveal">
+        <div class="section-badge">Paket Hemat &amp; Promo</div>
+        <h2>Paket <em>Harga</em> Spesial</h2>
+        <p>Lebih hemat dengan paket — pilih yang paling cocok untukmu</p>
+      </div>
+      <div id="packagesLanding"></div>
+      <div class="pk-more"><button class="btn-outline" onclick="showPage('pricelist')"><i class="fas fa-tags"></i> Lihat semua harga</button></div>
     </div>
   </section>
 
@@ -346,6 +358,11 @@
       <button class="price-filter-btn" onclick="filterPrice('videocall', this)">🎥 Video Call</button>
       <button class="price-filter-btn" onclick="filterPrice('offline', this)">📍 Offline Date</button>
       <button class="price-filter-btn" onclick="filterPrice('pap', this)">📸 PAP</button>
+      <button class="price-filter-btn" onclick="filterPrice('paket', this)">🎁 Paket &amp; Promo</button>
+    </div>
+    <div id="packagesPricelistWrap" class="pk-none" style="margin-bottom:2.2rem">
+      <div class="section-badge" style="margin-bottom:1.4rem">🎁 Paket Hemat &amp; Promo</div>
+      <div id="packagesPricelist"></div>
     </div>
     <div id="pricelistContainer"></div>
   </div>
@@ -617,6 +634,7 @@
       <div class="db-nav-label">Konten</div>
       <a class="db-link" onclick="showAdminTab('pricelist');closeDashSidebar('admin')"><i class="fas fa-tags"></i> Pricelist</a>
       <a class="db-link" onclick="showAdminTab('testimonials');closeDashSidebar('admin')"><i class="fas fa-star"></i> Testimoni</a>
+      <a class="db-link" onclick="showAdminTab('packages');closeDashSidebar('admin')"><i class="fas fa-box-open"></i> Paket &amp; Promo Harga</a>
       <a class="db-link" onclick="showAdminTab('promo');closeDashSidebar('admin')"><i class="fas fa-bullhorn"></i> Promo &amp; Notifikasi</a>
       <div class="db-nav-label">Sistem</div>
       <a class="db-link" onclick="showAdminTab('settings');closeDashSidebar('admin')"><i class="fas fa-cog"></i> Pengaturan</a>
@@ -638,6 +656,7 @@
       <div id="admin-tab-pricelist" class="admin-tab"></div>
       <div id="admin-tab-testimonials" class="admin-tab"></div>
       <div id="admin-tab-rank" class="admin-tab"></div>
+      <div id="admin-tab-packages" class="admin-tab"></div>
       <div id="admin-tab-promo" class="admin-tab"></div>
       <div id="admin-tab-settings" class="admin-tab"></div>
     </div>
@@ -697,8 +716,8 @@
       <div class="footer-logo"><img class="brand-n" src="logo-n.png" alt=""><b class="wm">Nabi<span>love</span></b></div>
       <p>Platform companionship modern Indonesia. Aman, nyaman, profesional, dan terpercaya untuk pengalaman terbaik.</p>
       <div class="footer-social">
-        <a href="https://www.instagram.com/sewapacarr?igsh=MWxqMnBhY21qczZpbg==&igsi=MWxqMnBhY21qczZpbg==" target="_blank" rel="noopener" title="Instagram"><i class="fab fa-instagram"></i></a>
-        <a href="#" title="TikTok"><i class="fab fa-tiktok"></i></a>
+        <a href="https://www.instagram.com/sewapacarr/" target="_blank" rel="noopener" title="Instagram"><i class="fab fa-instagram"></i></a>
+        <a href="https://www.tiktok.com/@nab.riciliaa?_r=1&amp;_t=ZS-9APZ1yAkjBw" target="_blank" rel="noopener" title="TikTok @nab.riciliaa"><i class="fab fa-tiktok"></i></a>
         <a href="#" onclick="openMessageModal();return false;" title="Chat Admin"><i class="fas fa-comment-dots"></i></a>
         <a href="#" title="Telegram"><i class="fab fa-telegram"></i></a>
       </div>
@@ -724,7 +743,8 @@
       <h4>Kontak</h4>
       <p><i class="fas fa-comment-dots"></i> <a href="#" onclick="openMessageModal();return false;">Chat Admin</a></p>
       <p><i class="fas fa-envelope"></i> hello@nabilove.com</p>
-      <p><i class="fab fa-instagram"></i> <a href="https://www.instagram.com/sewapacarr?igsh=MWxqMnBhY21qczZpbg==&igsi=MWxqMnBhY21qczZpbg==" target="_blank" rel="noopener">@sewapacarr</a></p>
+      <p><i class="fab fa-instagram"></i> <a href="https://www.instagram.com/sewapacarr/" target="_blank" rel="noopener">@sewapacarr</a></p>
+      <p><i class="fab fa-tiktok"></i> <a href="https://www.tiktok.com/@nab.riciliaa?_r=1&amp;_t=ZS-9APZ1yAkjBw" target="_blank" rel="noopener">@nab.riciliaa</a></p>
       <div class="disclaimer">
         <i class="fas fa-info-circle"></i>
         Platform ini hanya menyediakan layanan companionship profesional dengan batasan sopan dan tidak melayani konten vulgar atau aktivitas melanggar hukum.
@@ -918,7 +938,8 @@
 
 <script src="app.js"></script>
 <script src="patch.js?v=3"></script>
-<script src="admin.js?v=6"></script>
+<script src="admin.js?v=7"></script>
+<script src="packages.js?v=1"></script>
 <script src="pwa.js"></script>
 <script src="emoji-fallback.js"></script>
 </body>

@@ -123,6 +123,7 @@
     ov.querySelector('.nb-ok').onclick = function () { closeOv(ov); cb(); };
   }
   window.nbConfirm = nbConfirm;
+  window.nbOverlay = overlay; window.nbCloseOv = closeOv;
 
   /* ---- RESET DATA: 2 pertanyaan ---- */
   window.resetData = function () {
@@ -133,6 +134,7 @@
   function doWipe() {
     try { localStorage.setItem('nabi_wiped', '1'); } catch (e) {}
     ['talents', 'orders', 'pricelist', 'testimonials', 'customPhotos', 'inbox', 'talentApplications'].forEach(function (k) { try { db.ref(k).remove(); } catch (e) {} });
+    try { db.ref('packages').set({ v: 1 }); } catch (e) {}
     _talentsCache = []; _ordersCache = []; _priceCache = emptyPrices(); _testiCache = []; _photosCache = {};
     toast('Semua data sudah dihapus', 'info'); showAdminTab('settings');
   }
