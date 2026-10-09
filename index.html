@@ -43,7 +43,7 @@
   <link rel="icon" type="image/png" href="favicon.png">
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="theme.css?v=3" />
-  <link rel="stylesheet" href="modern.css?v=9" />
+  <link rel="stylesheet" href="modern.css?v=10" />
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon-192.png">
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -608,13 +608,16 @@
     </div>
     <nav class="db-nav">
       <div class="db-nav-label">Menu Utama</div>
+      <a class="db-link nb-guest" onclick="nbGuest()"><i class="fas fa-house"></i> Home · Lihat sebagai Tamu</a>
       <a class="db-link active" onclick="showAdminTab('overview');closeDashSidebar('admin')"><i class="fas fa-chart-pie"></i> Overview</a>
       <a class="db-link" onclick="showAdminTab('talents');closeDashSidebar('admin')"><i class="fas fa-users"></i> Kelola Talent</a>
+      <a class="db-link" onclick="showAdminTab('rank');closeDashSidebar('admin')"><i class="fas fa-ranking-star"></i> Ranking Talent</a>
       <a class="db-link" onclick="showAdminTab('orders');closeDashSidebar('admin')"><i class="fas fa-shopping-bag"></i> Pesanan</a>
       <a class="db-link" onclick="showAdminTab('inbox');closeDashSidebar('admin')"><i class="fas fa-envelope"></i> Pesan Masuk <span class="db-inbox-badge" id="adminInboxBadge"></span></a>
       <div class="db-nav-label">Konten</div>
       <a class="db-link" onclick="showAdminTab('pricelist');closeDashSidebar('admin')"><i class="fas fa-tags"></i> Pricelist</a>
       <a class="db-link" onclick="showAdminTab('testimonials');closeDashSidebar('admin')"><i class="fas fa-star"></i> Testimoni</a>
+      <a class="db-link" onclick="showAdminTab('promo');closeDashSidebar('admin')"><i class="fas fa-bullhorn"></i> Promo &amp; Notifikasi</a>
       <div class="db-nav-label">Sistem</div>
       <a class="db-link" onclick="showAdminTab('settings');closeDashSidebar('admin')"><i class="fas fa-cog"></i> Pengaturan</a>
     </nav>
@@ -634,6 +637,8 @@
       <div id="admin-tab-inbox" class="admin-tab"></div>
       <div id="admin-tab-pricelist" class="admin-tab"></div>
       <div id="admin-tab-testimonials" class="admin-tab"></div>
+      <div id="admin-tab-rank" class="admin-tab"></div>
+      <div id="admin-tab-promo" class="admin-tab"></div>
       <div id="admin-tab-settings" class="admin-tab"></div>
     </div>
   </div>
@@ -752,10 +757,14 @@
   <div class="modal-box" onclick="event.stopPropagation()">
     <button class="modal-close" onclick="closeModal('loginModal')"><i class="fas fa-times"></i></button>
     <div class="modal-logo"><img class="brand-n" src="logo-n.png" alt=""><b class="wm">Nabi<span>love</span></b></div>
-    <h3 style="text-align:center;margin-bottom:1.5rem">Masuk ke Akun</h3>
-    <div class="form-group"><label>Username</label><div class="icon-input"><i class="fas fa-user"></i><input type="text" id="loginUser" placeholder="username" /></div></div>
-    <div class="form-group"><label>Password</label><div class="icon-input"><i class="fas fa-lock"></i><input type="password" id="loginPass" placeholder="••••••••" /></div></div>
-    <button class="btn-primary" style="width:100%;margin-top:.5rem" onclick="handleLogin()">Masuk</button>
+    <h3 class="login-title">Masuk Admin</h3>
+    <p class="login-sub">Area khusus pengelola Nabilove</p>
+    <form id="loginForm" autocomplete="on" onsubmit="handleLogin();return false">
+      <div class="form-group"><label for="loginUser">Email</label><div class="icon-input"><i class="fas fa-envelope"></i><input type="text" id="loginUser" name="username" autocomplete="username" inputmode="email" autocapitalize="off" spellcheck="false" placeholder="Email" /></div></div>
+      <div class="form-group"><label for="loginPass">Password</label><div class="icon-input"><i class="fas fa-lock"></i><input type="password" id="loginPass" name="password" autocomplete="current-password" placeholder="Password" /><button type="button" class="pw-eye" onclick="togglePw()" aria-label="Tampilkan password"><i class="fas fa-eye"></i></button></div></div>
+      <label class="login-remember"><input type="checkbox" id="loginRemember" checked /><span>Ingat email &amp; password</span></label>
+      <button type="submit" class="btn-primary login-submit"><i class="fas fa-right-to-bracket"></i> Masuk</button>
+    </form>
   </div>
 </div>
 
@@ -909,7 +918,7 @@
 
 <script src="app.js"></script>
 <script src="patch.js?v=3"></script>
-<script src="admin.js?v=4"></script>
+<script src="admin.js?v=5"></script>
 <script src="pwa.js"></script>
 </body>
 </html>

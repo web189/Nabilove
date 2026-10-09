@@ -49,6 +49,10 @@
         ".write": "!data.exists()",
         ".validate": "auth != null && root.child('admins').child(auth.uid).val() === true || (newData.hasChildren(['name','wa','status']) && newData.child('status').val() === 'Menunggu Seleksi' && newData.child('name').isString() && newData.child('name').val().length <= 100 && newData.child('wa').val().length <= 30)"
       }
+    },
+    "promos": {
+      ".read": true,
+      ".write": "auth != null && root.child('admins').child(auth.uid).val() === true"
     }
   }
 }
