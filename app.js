@@ -142,6 +142,7 @@ function initFirebaseListeners() {
       _photosCache = val;
       const grid = document.getElementById('talentGrid');
       if (grid && grid.children.length > 0) renderTalents();
+      renderShowcase(); /* beranda + kartu hero ikut diperbarui saat foto tiba */
     });
   });
   // ── INBOX (pesan masuk, menggantikan redirect WhatsApp) ──

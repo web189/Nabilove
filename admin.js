@@ -351,7 +351,7 @@
     var cards = document.querySelectorAll('.hero-card-stack .hcard'), stack = document.querySelector('.hero-card-stack');
     [].forEach.call(cards, function (c, i) {
       var t = T[i]; if (!t) { c.style.display = 'none'; return; } c.style.display = '';
-      var a = c.querySelector('.hcard-avatar'), u = getTalentPhotoUrl(t.id); a.style.backgroundImage = u ? 'url("' + u.replace(/"/g, '') + '")' : ''; a.style.backgroundSize = 'cover'; a.style.backgroundPosition = 'center'; a.textContent = u ? '' : (t.name || '?').charAt(0);
+      var a = c.querySelector('.hcard-avatar'), u = getTalentPhotoUrl(t.id); a.style.background = u ? 'url("' + u.replace(/"/g, '') + '") center/cover no-repeat' : 'linear-gradient(135deg,#ec6f9b,#b8144a)'; a.style.color = '#fff'; a.textContent = u ? '' : (t.name || '?').charAt(0).toUpperCase();
       c.querySelector('strong').textContent = t.name; c.querySelector('.hcard-info span').textContent = '⭐ ' + t.rating + ' · ' + t.location;
       var st = c.querySelector('.hcard-status'); st.className = 'hcard-status ' + (t.status === 'online' ? 'online' : 'offline'); st.textContent = t.status === 'online' ? 'Online' : t.status === 'busy' ? 'Sibuk' : 'Offline';
     });

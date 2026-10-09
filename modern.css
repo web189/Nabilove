@@ -218,3 +218,34 @@ select option{background:var(--bg-card);color:var(--text)}
 @media (min-width:901px){.nav-logo .brand-n{height:48px}}
 @media (max-width:380px){.nav-logo .brand-n{height:34px}}
 .loading-heart{width:76px;max-width:76px}
+
+/* ===== v12: penyegaran tampilan + performa Windows 7 ===== */
+/* navbar solid (teks di belakang tak lagi tembus) */
+.navbar,.navbar.scrolled{background:#fbf6f4!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;box-shadow:0 1px 0 rgba(0,0,0,.06),0 6px 18px rgba(60,20,40,.05)}
+[data-theme="dark"] .navbar,[data-theme="dark"] .navbar.scrolled{background:#0f0a14!important;box-shadow:0 1px 0 rgba(255,255,255,.06),0 6px 18px rgba(0,0,0,.35)}
+/* animasi tak berujung dimatikan: berat di PC lama */
+.tc-photo img{animation:none!important;will-change:auto!important}
+/* emoji pengganti */
+.nb-dot{display:inline-block;width:.62em;height:.62em;border-radius:50%;margin-right:.35em;vertical-align:.02em}
+.nb-em{margin-right:.2em;font-size:.95em}
+/* layanan: ikon gradien + baris terakhir rata tengah */
+.services-grid{display:flex!important;flex-wrap:wrap;justify-content:center;gap:1.1rem}
+.service-card{flex:1 1 210px;max-width:calc(33.333% - 1.1rem);min-width:210px;border-radius:24px;text-align:center}
+.sc-icon{width:62px;height:62px;border-radius:20px;background:linear-gradient(135deg,#ec6f9b,#b8144a);color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.55rem;margin:0 auto 1rem;box-shadow:0 10px 22px rgba(200,30,91,.3)}
+.service-card:hover .sc-icon{transform:translateY(-3px) rotate(-4deg);transition:transform .25s var(--ease)}
+.service-card.featured .sc-icon{background:linear-gradient(135deg,#d9a53b,#b8144a)}
+@media (max-width:760px){.service-card{flex-basis:calc(50% - .6rem);max-width:calc(50% - .6rem);min-width:0;padding:1.1rem .7rem}.sc-icon{width:52px;height:52px;font-size:1.3rem}}
+/* talent: kartu persegi modern, grid rata tengah (1 talent pun tampak rapi) */
+.talent-grid,.talent-showcase-grid{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),300px))!important;justify-content:center;gap:1.4rem}
+.talent-card{border-radius:26px;overflow:hidden;box-shadow:0 10px 30px rgba(60,20,40,.10);transition:transform .25s var(--ease),box-shadow .25s var(--ease)}
+.talent-card:hover{transform:translateY(-5px);box-shadow:0 18px 40px rgba(200,30,91,.18)}
+.tc-photo{height:auto!important;aspect-ratio:1/1}
+.tc-info{padding:1rem 1.1rem 1.15rem}
+.tc-header strong{font-size:1.08rem}
+.tc-rating i{color:#f5b82e}
+/* hero kartu talent: avatar jelas */
+.hcard-avatar{flex:0 0 auto;font-weight:700;font-size:1.1rem}
+/* admin PC: judul ganda (sidebar + topbar) dirapikan */
+@media (min-width:901px){.db-topbar-title{display:none}}
+/* judul bagian */
+.section-header h2{letter-spacing:-.02em}
