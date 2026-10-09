@@ -205,3 +205,16 @@ select option{background:var(--bg-card);color:var(--text)}
 .nb-promo-e{font-size:1.8rem;width:44px;text-align:center}
 .nb-promo-i{flex:1;min-width:170px}.nb-promo-i small{display:block;color:var(--text-muted);margin-top:.15rem;font-size:.78rem}
 .nb-promo-a{display:flex;gap:.4rem;align-items:center;flex-wrap:wrap}
+/* ===== v11: logo baru (lebar ±1.5:1) — ukuran berbasis tinggi ===== */
+.brand-n{width:auto;height:1.4em;max-width:none;object-fit:contain}
+.nav-logo .brand-n{width:auto;height:38px}
+@media (min-width:901px){.nav-logo .brand-n{height:46px}}
+@media (max-width:380px){.nav-logo .brand-n{width:auto;height:32px}}
+.footer-logo .brand-n{width:auto;height:48px}
+.modal-logo .brand-n,#loginModal .modal-logo .brand-n{width:auto;height:66px}
+.loading-heart{width:72px;height:auto;max-width:72px}
+@media (min-width:900px){.hero::after{aspect-ratio:3/2;width:min(38vw,540px);right:3%}}
+.nav-logo .brand-n{height:42px}
+@media (min-width:901px){.nav-logo .brand-n{height:48px}}
+@media (max-width:380px){.nav-logo .brand-n{height:34px}}
+.loading-heart{width:76px;max-width:76px}
