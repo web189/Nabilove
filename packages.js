@@ -1,4 +1,4 @@
-/* Nabilove — packages.js
+/* Nabillove — packages.js
    Paket Harga & Promo: tampil di Beranda + halaman Pricelist, dikelola di Dasbor Admin → "Paket & Promo Harga".
    Data disimpan di db.ref('packages') = { v:1, items:{ id: paket } }.
    Selama admin belum pernah menyimpan, yang tampil adalah paket contoh (DEFAULTS) dari gambar acuan. */
@@ -88,8 +88,8 @@
     return '<div class="pk-wrap">' + groupsOf(L).map(function (g) {
       var tabs = g.list.filter(function (p) { return p.layout !== 'row'; }), rows = g.list.filter(function (p) { return p.layout === 'row'; });
       return '<div class="pk-group"><div class="pk-group-head"><h3>' + esc(g.name) + '</h3></div>' +
-        (tabs.length ? '<div class="pk-grid">' + tabs.map(cardHTML).join('') + '</div>' : '') +
-        (rows.length ? '<div class="pk-grid rows">' + rows.map(cardHTML).join('') + '</div>' : '') + '</div>';
+        (tabs.length ? '<div class="pk-grid n' + Math.min(tabs.length, 5) + '">' + tabs.map(cardHTML).join('') + '</div>' : '') +
+        (rows.length ? '<div class="pk-grid rows n' + Math.min(rows.length, 5) + '">' + rows.map(cardHTML).join('') + '</div>' : '') + '</div>';
     }).join('') + '</div>';
   }
   function renderPublic() {

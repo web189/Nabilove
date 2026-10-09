@@ -1,4 +1,4 @@
-/* Nabilove — admin.js (dimuat setelah patch.js). Login hanya admin, kelola talent, reset data 2 tahap. */
+/* Nabillove — admin.js (dimuat setelah patch.js). Login hanya admin, kelola talent, reset data 2 tahap. */
 (function () {
   'use strict';
   function $(id) { return document.getElementById(id); }
@@ -11,7 +11,7 @@
 
   /* ---- Firebase live: login admin lewat Authentication, data privat hanya untuk admin ---- */
   var live = window.__fbLive === true, appsCache = {}, attached = false;
-  function becomeAdmin() { currentUser = { role: 'admin', name: 'Admin Nabilove', username: 'admin' }; lsSet('lovia_session', currentUser); attachPrivate(); updBack(); }
+  function becomeAdmin() { currentUser = { role: 'admin', name: 'Admin Nabillove', username: 'admin' }; lsSet('lovia_session', currentUser); attachPrivate(); updBack(); }
   function attachPrivate() {
     if (attached) return; attached = true;
     db.ref('orders').on('value', function (sn) { var v = nbEsc(sn.val()); _ordersCache = v ? Object.keys(v).map(function (k) { return v[k]; }).sort(function (a, b) { return (b.createdAt || 0) - (a.createdAt || 0); }) : []; });
@@ -43,7 +43,7 @@
     if (u === 'admin' && p === 'admin123') { becomeAdminLocal(); return; }
     toast('Username atau password salah!', 'error');
   };
-  function becomeAdminLocal() { currentUser = { role: 'admin', name: 'Admin Nabilove', username: 'admin' }; lsSet('lovia_session', currentUser); attachPrivate(); closeModal('loginModal'); toast('Selamat datang, Admin! 👑', 'success'); setTimeout(function () { showPage('admin'); }, 400); }
+  function becomeAdminLocal() { currentUser = { role: 'admin', name: 'Admin Nabillove', username: 'admin' }; lsSet('lovia_session', currentUser); attachPrivate(); closeModal('loginModal'); toast('Selamat datang, Admin! 👑', 'success'); setTimeout(function () { showPage('admin'); }, 400); }
 
   /* ---- Pendaftaran talent: masuk ke antrean (bukan ke data publik) ---- */
   window.submitRegister = function () {
@@ -140,7 +140,7 @@
   }
   window.renderAdminSettings = function (el) {
     el.innerHTML = '<div class="dh"><div><h2>Pengaturan</h2><p>nabilove.com</p></div></div><div class="admin-2col-grid">' +
-      '<div class="dash-section"><h3>Akun admin</h3><p style="font-size:.88rem;color:var(--text-sec);line-height:1.7">Username: <strong>admin</strong><br>Buka login: ketuk logo Nabilove 5x.</p></div>' +
+      '<div class="dash-section"><h3>Akun admin</h3><p style="font-size:.88rem;color:var(--text-sec);line-height:1.7">Username: <strong>admin</strong><br>Buka login: ketuk logo Nabillove 5x.</p></div>' +
       '<div class="dash-section nb-danger"><h3>Zona berbahaya</h3><p style="font-size:.85rem;color:var(--text-sec);margin-bottom:1rem">Hapus seluruh data situs. Kamu akan ditanya 2 kali sebelum data dihapus.</p><button type="button" class="nb-btn danger" onclick="resetData()"><i class="fas fa-triangle-exclamation"></i> Reset semua data</button></div></div>';
   };
 

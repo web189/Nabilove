@@ -1,4 +1,4 @@
-/* Nabilove — emoji-fallback.js
+/* Nabillove — emoji-fallback.js
    Windows 7 tidak punya font emoji berwarna (tampil sebagai kotak □). Skrip ini hanya aktif jika
    emoji tidak didukung: emoji diganti ikon Font Awesome / titik warna. Di perangkat modern tidak melakukan apa-apa. */
 (function () {

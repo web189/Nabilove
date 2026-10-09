@@ -428,7 +428,7 @@ const DEFAULT_TESTIMONIALS = [
   {name:'Bayu P.',rating:5,text:'Ngobrol bareng Kira tuh seru banget, nyambung dan ramah. Worth it banget dah!',service:'Video Call'},
   {name:'Dimas R.',rating:5,text:'Offline date sama Dira vibes-nya enak banget, orangnya asik dan tau spot-spot kece. Recommended banget bestie!',service:'Offline Date 4 Jam'},
   {name:'Angga W.',rating:4,text:'Prosesnya smooth, talent-nya responsif, ga ribet sama sekali. Gaskeun order lagi minggu depan!',service:'Video Call 30 Mnt'},
-  {name:'Reza S.',rating:5,text:'Udah cobain banyak platform tapi Nabilove tetep juara. Real recommended, ga php sama sekali!',service:'PDKT Package 2'},
+  {name:'Reza S.',rating:5,text:'Udah cobain banyak platform tapi Nabillove tetep juara. Real recommended, ga php sama sekali!',service:'PDKT Package 2'},
   {name:'Fajar K.',rating:5,text:'Ngobrol sama Reva santai abis, sejam berasa lima menit doang. Worth every rupiah, gaskeun!',service:'Calling 60 Menit'},
 ];
 
@@ -639,7 +639,7 @@ function sendInboxMessage({name, contact, message, talentId, talentName, source}
 function openMessageModal(talentId, talentName, presetText) {
   window._msgContext = { talentId: talentId || null, talentName: talentName || null };
   const label = document.getElementById('msgContextLabel');
-  if (label) label.textContent = talentName ? `Pesan untuk ${talentName}` : 'Pesan untuk Admin Nabilove';
+  if (label) label.textContent = talentName ? `Pesan untuk ${talentName}` : 'Pesan untuk Admin Nabillove';
   const ta = document.getElementById('msgText');
   if (ta) ta.value = presetText || '';
   openModal('messageModal');
@@ -1322,7 +1322,7 @@ function handleLogin() {
   if (!user.trim()||!pass.trim()) { toast('Isi username dan password!','error'); return; }
 
   if (user==='admin' && pass==='admin123') {
-    currentUser = {role:'admin', name:'Admin Nabilove', username:'admin'};
+    currentUser = {role:'admin', name:'Admin Nabillove', username:'admin'};
     lsSet('lovia_session', currentUser);
     closeModal('loginModal');
     toast('Selamat datang, Admin! 👑','success');
@@ -1559,7 +1559,7 @@ function renderAdminSettings(el) {
   el.innerHTML = `<h2 style="font-family:var(--font-display);margin-bottom:1.5rem">Pengaturan ⚙️</h2>
     <div class="admin-2col-grid">
       <div class="dash-section"><h3>🔐 Akun Admin</h3><div style="font-size:.88rem;display:flex;flex-direction:column;gap:.5rem"><div>Username: <strong>admin</strong></div><div>Password: <strong>admin123</strong></div><div>Role: <strong>Super Admin</strong></div></div></div>
-      <div class="dash-section"><h3>📊 Platform</h3><div style="font-size:.88rem;display:flex;flex-direction:column;gap:.5rem"><div>Versi: <strong>Nabilove v3.0</strong></div><div>Storage: <strong>Firebase Realtime Database ✅</strong></div><div>Deploy: <strong>GitHub Pages Ready</strong></div></div></div>
+      <div class="dash-section"><h3>📊 Platform</h3><div style="font-size:.88rem;display:flex;flex-direction:column;gap:.5rem"><div>Versi: <strong>Nabillove v3.0</strong></div><div>Storage: <strong>Firebase Realtime Database ✅</strong></div><div>Deploy: <strong>GitHub Pages Ready</strong></div></div></div>
       <div class="dash-section"><h3>🎨 Tema</h3><div style="display:flex;gap:.75rem"><button class="btn-sm" onclick="document.documentElement.setAttribute('data-theme','light');localStorage.setItem('lovia_theme','light');updateThemeIcon('light');toast('Terang aktif','info')">☀️ Terang</button><button class="btn-sm" onclick="document.documentElement.setAttribute('data-theme','dark');localStorage.setItem('lovia_theme','dark');updateThemeIcon('dark');toast('Gelap aktif','info')">🌙 Gelap</button></div></div>
       <div class="dash-section"><h3>🗑️ Reset Data Firebase</h3><p style="font-size:.82rem;color:var(--text-muted);margin-bottom:1rem">Hapus semua data dari Firebase (tidak bisa dibatalkan)</p><button class="btn-outline" onclick="resetData()" style="border-color:#ef4444;color:#ef4444"><i class="fas fa-redo"></i> Reset Semua</button></div>
     </div>`;
@@ -1993,7 +1993,8 @@ function toggleMusic() {
     bgMusic.play().catch(()=>{}); // catch autoplay policy error
     if (icon) icon.className='fas fa-pause';
     if (btn)  btn.classList.add('playing');
-    toast('🎵 Lagu First Love diputar....','info');
+    toast('🎵 Memutar: Bila Aku — Jeje','info');
+    try { if ('mediaSession' in navigator && window.MediaMetadata) navigator.mediaSession.metadata = new MediaMetadata({ title: 'Bila Aku', artist: 'Jeje', album: 'Nabillove' }); } catch (e) {}
   } else {
     bgMusic.pause();
     if (icon) icon.className='fas fa-music';

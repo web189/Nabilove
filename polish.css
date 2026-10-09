@@ -1,0 +1,138 @@
+/* Nabillove — polish.css (dimuat PALING AKHIR)
+   Perapihan tata letak HP / tablet / PC: sejajar dengan kontainer, grid tanpa kartu "yatim",
+   kartu padat di HP, testimoni bisa digeser, hero lebih hidup. */
+
+/* ---------- 1. Sumbu sejajar: hero, navbar, dan konten memakai lebar yang sama ---------- */
+.hero { padding-left: max(1.5rem, calc((100vw - 1280px) / 2 + 1.5rem)); padding-right: max(1.5rem, calc((100vw - 1280px) / 2 + 1.5rem)); }
+.nav-container, .container { max-width: 1280px; }
+
+/* ---------- 2. Hero: kartu talent tidak lagi menumpuk teksnya ---------- */
+.hero-visual { height: 440px; }
+.hcard { width: 290px; padding: .9rem 1.1rem; }
+.hcard-info { min-width: 0; flex: 1; }
+.hcard-info strong, .hcard-info span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hcard-1 { left: 36px; } .hcard-2 { left: 0; top: 118px; } .hcard-3 { left: 46px; top: 240px; }
+@media (max-width: 1024px) {
+  /* tablet & HP: kartu talent tampil sebagai baris geser di bawah teks hero */
+  .hero-visual { display: flex !important; height: auto; width: 100%; max-width: 640px; margin: .5rem auto 0; justify-content: flex-start; }
+  .hero-card-stack { display: flex !important; flex-direction: row; gap: .75rem; width: 100%; overflow-x: auto; scroll-snap-type: x mandatory; padding: .3rem .2rem 1rem; position: static; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+  .hero-card-stack::-webkit-scrollbar { display: none; }
+  .hcard, .hcard-1, .hcard-2, .hcard-3 { position: static; transform: none !important; animation: none !important; flex: 0 0 248px; width: 248px; scroll-snap-align: start; margin: 0; }
+}
+@media (max-width: 1024px) {
+  .hero { gap: 1rem; grid-template-columns: minmax(0, 1fr) !important; }
+  .hero > * { min-width: 0; max-width: 100%; }
+  .hero-card-stack { height: auto !important; min-height: 0 !important; }
+  .hcard { height: auto !important; }
+}
+html, body { overflow-x: clip; }
+
+/* ---------- 3. Layanan: 5 kartu selalu seimbang ---------- */
+.services-grid { display: grid !important; grid-template-columns: repeat(5, 1fr); gap: 1.1rem; justify-content: stretch; }
+.service-card { max-width: none; min-width: 0; flex: initial; }
+@media (max-width: 1099px) {
+  .services-grid { grid-template-columns: repeat(6, 1fr); }
+  .service-card { grid-column: span 2; }
+  .service-card:nth-child(4), .service-card:nth-child(5) { grid-column: span 3; }
+}
+@media (max-width: 560px) {
+  .services-grid { grid-template-columns: repeat(2, 1fr); gap: .7rem; }
+  .service-card, .service-card:nth-child(4) { grid-column: span 1; }
+  .service-card:nth-child(5) { grid-column: 1 / -1; }
+  .service-card { padding: 1.1rem .6rem; }
+  .service-card p { display: block !important; font-size: .72rem; }
+}
+
+/* ---------- 4. Talent: grid rapi, 4 kolom di PC, 2 kolom padat di HP ---------- */
+.talent-showcase-grid { display: flex !important; flex-wrap: wrap; justify-content: center; gap: 1.25rem; grid-template-columns: none !important; }
+.talent-showcase-grid > .talent-card { flex: 0 1 calc(25% - .95rem); min-width: 0; }
+.talent-grid { display: grid !important; grid-template-columns: repeat(4, 1fr) !important; justify-content: stretch; gap: 1.25rem; }
+@media (max-width: 1099px) {
+  .talent-showcase-grid > .talent-card { flex-basis: calc(33.333% - .85rem); }
+  .talent-grid { grid-template-columns: repeat(3, 1fr) !important; }
+}
+@media (max-width: 800px) {
+  .talent-showcase-grid > .talent-card { flex-basis: calc(50% - .65rem); }
+  .talent-grid { grid-template-columns: repeat(2, 1fr) !important; }
+}
+@media (max-width: 560px) {
+  .talent-showcase-grid { gap: .75rem; }
+  .talent-showcase-grid > .talent-card { flex-basis: calc(50% - .4rem); }
+  .talent-grid { gap: .75rem; }
+  .talent-card { border-radius: 20px; }
+  .tc-info { padding: .75rem .7rem .85rem !important; }
+  .tc-header strong { font-size: .92rem !important; }
+  .tc-meta { font-size: .7rem; }
+  .tc-rating { font-size: .72rem; }
+  .tc-info .btn-primary { font-size: .78rem; padding: .55rem .4rem; min-height: 40px; margin-top: .55rem !important; }
+}
+
+/* ---------- 5. Kenapa Kami: 2x2 padat di HP ---------- */
+@media (max-width: 480px) {
+  .why-grid { grid-template-columns: repeat(2, 1fr) !important; gap: .7rem; }
+  .why-card { padding: 1.1rem .75rem !important; }
+  .why-card h3 { font-size: .95rem; }
+  .why-card p { font-size: .75rem; line-height: 1.5; }
+  .why-icon { width: 46px !important; height: 46px !important; font-size: 1.1rem !important; margin-bottom: .6rem !important; }
+}
+
+/* ---------- 6. Testimoni: geser samping di HP ---------- */
+@media (max-width: 640px) {
+  .testimonials-grid { display: flex !important; overflow-x: auto; scroll-snap-type: x mandatory; gap: .85rem; margin: 0 -1rem; padding: .3rem 1rem 1rem; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+  .testimonials-grid::-webkit-scrollbar { display: none; }
+  .testimonials-grid > .testi-card { flex: 0 0 84%; scroll-snap-align: center; }
+}
+
+/* ---------- 7. Paket harga: jumlah kolom mengikuti jumlah kartu ---------- */
+.packages-section { background: var(--bg-card); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.pk-grid { grid-template-columns: repeat(auto-fit, minmax(235px, 1fr)); }
+.pk-grid.n1 { grid-template-columns: minmax(0, 360px); justify-content: center; }
+.pk-grid.n2 { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 760px; margin-inline: auto; }
+.pk-grid.n3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.pk-grid.n4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.pk-grid.rows.n1 { grid-template-columns: minmax(0, 560px); }
+.pk-grid.rows.n2 { max-width: none; }
+@media (max-width: 1000px) {
+  .pk-grid.n4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .pk-grid.n3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .pk-grid.n3 > :last-child:nth-child(odd) { grid-column: 1 / -1; justify-self: center; width: calc(50% - .65rem); }
+  .pk-grid.rows.n3 > :last-child:nth-child(odd) { width: calc(50% - .6rem); }
+}
+@media (max-width: 640px) {
+  .pk-grid, .pk-grid.n3, .pk-grid.n4, .pk-grid.n2 { gap: 1.7rem .7rem; }
+  .pk-grid.n4, .pk-grid.n2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .pk-grid.n3 { grid-template-columns: minmax(0, 1fr); }
+  .pk-grid.n3 > :last-child:nth-child(odd) { width: auto; justify-self: stretch; }
+  .pk-grid.rows, .pk-grid.rows.n2, .pk-grid.rows.n3 { grid-template-columns: minmax(0, 1fr); gap: .9rem; }
+  .pk-grid.rows.n3 > :last-child:nth-child(odd) { grid-column: auto; width: auto; justify-self: stretch; }
+  /* kartu tab dipadatkan agar muat 2 kolom seperti di gambar acuan */
+  .pk-tab .pk-label { font-size: .8rem; padding: .45rem .6rem; min-width: 64%; top: -14px; }
+  .pk-tab .pk-band b { font-size: 1.6rem; }
+  .pk-tab .pk-list { padding: .9rem .8rem .5rem; gap: .45rem; }
+  .pk-tab .pk-list li { font-size: .7rem; padding-left: .9rem; }
+  .pk-tab .pk-cta { margin: .5rem .7rem 0; min-height: 42px; font-size: .85rem; }
+  .pk-tab .pk-flags { padding: 0 .5rem .5rem; }
+  .pk-tab .pk-flag { font-size: .6rem; padding: .18rem .5rem; }
+  .pk-tab { padding-top: 1.45rem; padding-bottom: 1rem; }
+}
+
+/* ---------- 8. Ritme jarak & tombol (HP) ---------- */
+@media (max-width: 640px) {
+  .hero-actions { display: flex; flex-direction: column; gap: .7rem; width: 100%; max-width: 340px; margin-inline: auto; }
+  .hero-actions .btn-primary, .hero-actions .btn-outline { width: 100%; justify-content: center; }
+  .section-header { margin-bottom: 1.6rem; }
+  .section { padding-top: 2.8rem; padding-bottom: 2.8rem; }
+  .cta-box { padding: 2rem 1.25rem; }
+  .cta-box > div { flex-direction: column; align-items: stretch; }
+  .cta-box .btn-primary, .cta-box .btn-outline { width: 100%; justify-content: center; }
+}
+
+/* ---------- 9. Pelat nama merek (Nabillove) ---------- */
+.wm, .loading-logo, .nav-logo { white-space: nowrap; }
+
+/* ---------- 10. Kartu talent 2 kolom: nama tidak terjepit label gender ---------- */
+@media (max-width: 560px) {
+  #talentGrid .tc-header { flex-wrap: wrap; row-gap: 0; }
+  #talentGrid .tc-header > span { display: none; }
+  #talentGrid .tc-header strong { min-width: 0; overflow-wrap: anywhere; }
+}

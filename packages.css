@@ -1,4 +1,4 @@
-/* Nabilove — packages.css : Paket Harga & Promo (beranda + pricelist + admin) */
+/* Nabillove — packages.css : Paket Harga & Promo (beranda + pricelist + admin) */
 .pk-none, .pk-filtered-out { display: none !important; }
 .pk-wrap { display: flex; flex-direction: column; gap: 2.6rem; }
 .pk-group-head { display: flex; align-items: center; gap: .8rem; margin-bottom: 1.7rem; }

@@ -1,4 +1,4 @@
-/* Nabilove — patch v3 (dimuat setelah app.js)
+/* Nabillove — patch v3 (dimuat setelah app.js)
    Menimpa fungsi dasbor + tema tanpa mengubah alur lain. ES5-style, aman untuk Chrome lama. */
 (function () {
   'use strict';
@@ -187,7 +187,7 @@
       '<button class="btn-sm" onclick="document.documentElement.setAttribute(\'data-theme\',\'light\');localStorage.setItem(\'lovia_theme\',\'light\')"><i class="fas fa-sun"></i> Terang</button>' +
       '<button class="btn-sm" onclick="document.documentElement.setAttribute(\'data-theme\',\'dark\');localStorage.setItem(\'lovia_theme\',\'dark\')"><i class="fas fa-moon"></i> Gelap</button>' +
       '<button class="btn-sm" onclick="localStorage.removeItem(\'lovia_theme\');initTheme()"><i class="fas fa-desktop"></i> Ikuti perangkat</button></div></div>' +
-      '<div class="dash-section"><h3>Platform</h3><div style="font-size:.88rem;line-height:1.9">Versi: <strong>Nabilove v3</strong><br>Penyimpanan: <strong>browser perangkat ini (prototipe)</strong><br>Akun admin: <strong>admin</strong></div></div>' +
+      '<div class="dash-section"><h3>Platform</h3><div style="font-size:.88rem;line-height:1.9">Versi: <strong>Nabillove v3</strong><br>Penyimpanan: <strong>browser perangkat ini (prototipe)</strong><br>Akun admin: <strong>admin</strong></div></div>' +
       '<div class="dash-section"><h3>Reset data</h3><p style="font-size:.82rem;color:var(--text-muted);margin-bottom:1rem">Mengembalikan semua data contoh. Tidak bisa dibatalkan.</p><button class="mini no" onclick="resetData()">Reset semua data</button></div></div>';
   };
 
