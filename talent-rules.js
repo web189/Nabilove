@@ -15,6 +15,13 @@
       else { cards[i].classList.remove('locked'); if (!touched) cards[i].open = (i === 0); }
     }
   }
+  /* HP: membuka satu ketentuan otomatis menutup yang lain (tampilan lebih ringkas) */
+  [].forEach.call(document.querySelectorAll('#talentRules details.rule-card'), function (d) {
+    d.addEventListener('toggle', function () {
+      if (mq.matches || !d.open) return;
+      [].forEach.call(document.querySelectorAll('#talentRules details.rule-card'), function (o) { if (o !== d) o.open = false; });
+    });
+  });
   document.addEventListener('click', function (e) {
     var s = e.target.closest ? e.target.closest('#talentRules summary') : null;
     if (!s) return;
@@ -53,11 +60,53 @@
     return true;
   }
 
+  /* ---------- 4. Validasi formulir (langkah 1 & 2) ---------- */
+  function val(id) { var e = $(id); return e ? String(e.value).trim() : ''; }
+  function radio(n) { var e = document.querySelector('input[name="' + n + '"]:checked'); return e ? e.value : ''; }
+  function fail(msg, id) { toast(msg, 'error'); var el = id && $(id); if (el) { try { el.focus(); } catch (e) {} if (el.scrollIntoView) el.scrollIntoView({ block: 'center', behavior: 'smooth' }); } return false; }
+
+  /* @username / username / tautan profil -> "username" (atau null bila tidak valid) */
+  function parseHandle(raw) {
+    var s = String(raw || '').trim(); if (!s) return '';
+    if (/\//.test(s) || /(instagram|tiktok)\./i.test(s)) {
+      var seg = s.replace(/^https?:\/\//i, '').replace(/^www\./i, '').split(/[?#]/)[0].split('/').filter(Boolean);
+      s = seg[1] || '';
+    }
+    s = s.replace(/^@/, '');
+    return /^[A-Za-z0-9._]{2,30}$/.test(s) ? s : null;
+  }
+
+  function checkStep1() {
+    var need = ['reg_nama', 'reg_panggilan', 'reg_umur', 'reg_gender', 'reg_kota', 'reg_wa', 'reg_email', 'reg_tinggi', 'reg_berat'];
+    for (var i = 0; i < need.length; i++) if (!val(need[i])) return fail('Lengkapi semua field *!', need[i] === 'reg_gender' ? null : need[i]);
+    if (+val('reg_umur') < 18) return fail('Minimal usia 18 tahun!', 'reg_umur');
+    var tb = +val('reg_tinggi'), bb = +val('reg_berat');
+    if (tb < 130 || tb > 220) return fail('Tinggi badan tidak valid (130–220 cm).', 'reg_tinggi');
+    if (bb < 30 || bb > 150) return fail('Berat badan tidak valid (30–150 kg).', 'reg_berat');
+    if (!guard(['reg_panggilan'], { reg_panggilan: 'Nama panggilan' })) return false;
+    var st = radio('reg_status');
+    if (!st) return fail('Pilih status hubungan kamu.');
+    if (st !== 'Single') return fail('Mohon maaf, pendaftar wajib berstatus single.');
+    return true;
+  }
+  function checkStep2() {
+    if (val('reg_bio').length < 20) return fail('Bio minimal 20 karakter!', 'reg_bio');
+    if (val('reg_alasan').length < 10) return fail('Alasan ingin bergabung minimal 10 karakter.', 'reg_alasan');
+    if (!guard(['reg_bio', 'reg_alasan'], { reg_bio: 'Bio', reg_alasan: 'Alasan' })) return false;
+    if (!radio('reg_pengalaman')) return fail('Pilih pengalaman: pernah atau belum pernah jadi talent.');
+    var ig = parseHandle(val('reg_ig')), tk = parseHandle(val('reg_tiktok'));
+    if (ig === null) return fail('Username Instagram tidak valid (huruf, angka, titik, garis bawah).', 'reg_ig');
+    if (tk === null) return fail('Username TikTok tidak valid (huruf, angka, titik, garis bawah).', 'reg_tiktok');
+    if (!ig && !tk) return fail('Isi minimal satu akun sosial media (Instagram atau TikTok). Hanya dilihat admin.', 'reg_ig');
+    $('reg_ig').value = ig || ''; $('reg_tiktok').value = tk || '';   /* simpan dalam bentuk bersih */
+    return true;
+  }
+
   var _next = window.regNext;
   if (typeof _next === 'function') {
     window.regNext = function (step) {
-      if (step === 1 && !guard(['reg_panggilan'], { reg_panggilan: 'Nama panggilan' })) return;
-      if (step === 2 && !guard(['reg_bio', 'reg_exp'], { reg_bio: 'Bio', reg_exp: 'Pengalaman' })) return;
+      if (step === 1 && !checkStep1()) return;
+      if (step === 2 && !checkStep2()) return;
       return _next.apply(this, arguments);
     };
   }
@@ -65,8 +114,8 @@
   var _submit = window.submitRegister;
   if (typeof _submit === 'function') {
     window.submitRegister = function () {
-      var u = $('reg_umur'); if (u && +u.value < 18) { toast('Minimal usia 18 tahun!', 'error'); return; }
-      if (!guard(['reg_panggilan', 'reg_bio', 'reg_exp'], { reg_panggilan: 'Nama panggilan', reg_bio: 'Bio', reg_exp: 'Pengalaman' })) return;
+      if (!checkStep1()) { goRegStep(1); return; }
+      if (!checkStep2()) { goRegStep(2); return; }
       var c = $('reg_agree');
       if (!c || !c.checked) {
         toast('Centang pernyataan persetujuan untuk mengirim pendaftaran', 'error');

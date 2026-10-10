@@ -1,4 +1,4 @@
-var V='nabi-v17',CORE=['./','index.html','style.css','theme.css','modern.css','app.js','patch.js','pwa.js','admin.js','packages.js','packages.css','polish.css','talent-rules.js','talent-rules.css','emoji-fallback.js','firebase-config.js','logo-n.png','favicon.png','icon-192.png','manifest.json'];
+var V='nabi-v18',CORE=['./','index.html','style.css','theme.css','modern.css','app.js','patch.js','pwa.js','admin.js','packages.js','packages.css','polish.css','talent-rules.js','talent-rules.css','emoji-fallback.js','firebase-config.js','logo-n.png','favicon.png','icon-192.png','manifest.json'];
 self.addEventListener('install',function(e){e.waitUntil(caches.open(V).then(function(c){return c.addAll(CORE)}).then(function(){return self.skipWaiting()}))});
 self.addEventListener('activate',function(e){e.waitUntil(caches.keys().then(function(k){return Promise.all(k.filter(function(n){return n!==V}).map(function(n){return caches.delete(n)}))}).then(function(){return self.clients.claim()}))});
 self.addEventListener('fetch',function(e){var r=e.request;if(r.method!=='GET')return;var u=new URL(r.url);

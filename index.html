@@ -46,7 +46,7 @@
   <link rel="stylesheet" href="modern.css?v=14" />
   <link rel="stylesheet" href="packages.css?v=2" />
   <link rel="stylesheet" href="polish.css?v=2" />
-  <link rel="stylesheet" href="talent-rules.css?v=1" />
+  <link rel="stylesheet" href="talent-rules.css?v=3" />
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon-192.png?v=2">
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -431,12 +431,20 @@
         <h2 id="rulesTitle">Peraturan &amp; Ketentuan <em>Talent</em></h2>
         <p>Pelajari ketentuan berikut dengan saksama. Dengan mengirimkan formulir pendaftaran, kamu dinyatakan telah membaca dan menyetujuinya.</p>
       </div>
+      <ul class="rules-key" aria-label="Syarat utama">
+        <li><i class="fas fa-cake-candles"></i> Minimal 18 tahun</li>
+        <li><i class="fas fa-heart"></i> Berstatus single</li>
+        <li><i class="fas fa-star"></i> Berpenampilan menarik</li>
+        <li><i class="fas fa-user-lock"></i> Sosmed khusus admin</li>
+      </ul>
       <div class="rules-grid">
         <details class="rule-card" open>
           <summary><span class="rule-ic"><i class="fas fa-clipboard-check"></i></span><span class="rule-t"><small>Ketentuan 01</small>Persyaratan Pendaftar</span><i class="fas fa-chevron-down rule-chev"></i></summary>
           <ul>
             <li>Berusia minimal <strong>18 tahun</strong>.</li>
-            <li>Mengisi data diri dengan benar dan lengkap, termasuk nomor WhatsApp dan email yang aktif.</li>
+            <li>Berstatus <strong>single</strong> (tidak sedang menikah atau terikat hubungan).</li>
+            <li><strong>Berpenampilan menarik</strong>, rapi, dan sopan. Penilaian dilakukan admin berdasarkan foto pada proses seleksi.</li>
+            <li>Mengisi data diri dengan benar dan lengkap, termasuk tinggi badan, berat badan, serta nomor WhatsApp dan email yang aktif.</li>
             <li>Menyiapkan <strong>2–3 foto terbaik</strong> dengan wajah terlihat jelas, tidak buram, dan tanpa filter berlebihan. Foto bersifat privat dan hanya digunakan untuk proses seleksi.</li>
           </ul>
         </details>
@@ -449,11 +457,11 @@
           </ul>
         </details>
         <details class="rule-card rule-warn">
-          <summary><span class="rule-ic"><i class="fas fa-ban"></i></span><span class="rule-t"><small>Ketentuan 03</small>Larangan Sosial Media</span><i class="fas fa-chevron-down rule-chev"></i></summary>
+          <summary><span class="rule-ic"><i class="fas fa-user-lock"></i></span><span class="rule-t"><small>Ketentuan 03</small>Akun Sosial Media</span><i class="fas fa-chevron-down rule-chev"></i></summary>
           <ul>
-            <li>Talent <strong>tidak diperkenankan mencantumkan</strong> akun sosial media (Instagram, TikTok, dan sejenisnya) pada profil, bio, maupun materi layanan.</li>
-            <li>Talent tidak diperkenankan membagikan akun sosial media kepada klien dalam bentuk apa pun.</li>
-            <li>Pendaftaran tidak memerlukan akun sosial media.</li>
+            <li>Pendaftar <strong>wajib mencantumkan</strong> akun Instagram dan/atau TikTok pada formulir pendaftaran.</li>
+            <li>Akun tersebut <strong>hanya dapat dilihat oleh Admin</strong> untuk keperluan pengecekan calon talent dan tidak ditampilkan pada profil publik.</li>
+            <li>Talent tidak diperkenankan mencantumkan akun sosial media pada profil, bio, maupun materi layanan, serta tidak membagikannya kepada klien dalam bentuk apa pun.</li>
           </ul>
         </details>
         <details class="rule-card">
@@ -505,17 +513,32 @@
             </div>
             <div class="form-group"><label>Kota *</label><input type="text" id="reg_kota" placeholder="Kota tempat tinggal" /></div>
             <div class="form-group"><label>Nomor WhatsApp *</label><input type="text" id="reg_wa" placeholder="08xxxxxxxxxx" /></div>
+            <div class="pair-row"><div class="form-group"><label>Tinggi Badan (cm) *</label><input type="number" id="reg_tinggi" placeholder="mis. 160" min="130" max="220" inputmode="numeric" /></div>
+            <div class="form-group"><label>Berat Badan (kg) *</label><input type="number" id="reg_berat" placeholder="mis. 50" min="30" max="150" inputmode="numeric" /></div></div>
             <div class="form-group full"><label>Email *</label><input type="email" id="reg_email" placeholder="email@kamu.com" /></div>
+            <div class="form-group full"><label>Status Hubungan *</label>
+              <div class="choice-group" role="radiogroup" aria-label="Status hubungan">
+                <label class="choice"><input type="radio" name="reg_status" value="Single"><span><i class="fas fa-heart"></i> Single</span></label>
+                <label class="choice"><input type="radio" name="reg_status" value="Tidak single"><span>Tidak single</span></label>
+              </div>
+              <small class="field-hint">Pendaftar wajib berstatus single.</small>
+            </div>
           </div>
           <button class="btn-primary" onclick="regNext(1)">Lanjut <i class="fas fa-arrow-right"></i></button>
         </div>
         <div id="regStep2" class="reg-step">
           <h3>Profil</h3>
-          <div class="reg-note"><i class="fas fa-circle-info"></i> Bio dan profil <strong>tidak boleh memuat akun sosial media</strong>, tautan, ataupun nomor kontak pribadi.</div>
+          <div class="reg-note"><i class="fas fa-circle-info"></i><span>Kolom <strong>Bio</strong> dan <strong>Alasan</strong> tidak boleh memuat akun sosial media, tautan, ataupun nomor kontak. Akun sosial media diisi pada kolom khusus di bawah.</span></div>
           <div class="form-grid">
             <div class="form-group full"><label>Bio Singkat *</label><textarea id="reg_bio" rows="3" placeholder="Ceritakan sedikit tentang dirimu..."></textarea></div>
-            <div class="form-group full"><label>Pengalaman</label><textarea id="reg_exp" rows="2" placeholder="Pengalamanmu (opsional)"></textarea></div>
-            <div class="form-group"><label>Skill Komunikasi</label>
+            <div class="form-group full"><label>Alasan Ingin Bergabung *</label><textarea id="reg_alasan" rows="3" placeholder="Ceritakan singkat alasan kamu ingin bergabung..."></textarea></div>
+            <div class="form-group full"><label>Pengalaman *</label>
+              <div class="choice-group" role="radiogroup" aria-label="Pengalaman menjadi talent">
+                <label class="choice"><input type="radio" name="reg_pengalaman" value="Pernah"><span><i class="fas fa-circle-check"></i> Pernah jadi Talent</span></label>
+                <label class="choice"><input type="radio" name="reg_pengalaman" value="Belum pernah"><span><i class="fas fa-seedling"></i> Belum pernah jadi Talent</span></label>
+              </div>
+            </div>
+            <div class="form-group full"><label>Skill Komunikasi</label>
               <div class="custom-select" id="reg_skillWrap">
                 <button type="button" class="custom-select-trigger" onclick="toggleCustomSelect('reg_skill')"><span class="cs-value">Pemula</span><i class="fas fa-chevron-down"></i></button>
                 <div class="custom-select-panel" id="reg_skillPanel">
@@ -524,6 +547,13 @@
                   <div class="cs-option" data-value="Mahir" onclick="selectCustomOption(this,'reg_skill')">Mahir</div>
                 </div>
                 <input type="hidden" id="reg_skill" value="Pemula">
+              </div>
+            </div>
+            <div class="social-box full">
+              <div class="social-head"><span class="social-ic"><i class="fas fa-user-lock"></i></span><div><strong>Akun Sosial Media</strong><small>Wajib diisi minimal satu. <b>Hanya dilihat Admin</b> untuk pengecekan calon talent dan tidak ditampilkan di profil publik.</small></div></div>
+              <div class="social-grid">
+                <div class="form-group"><label>Instagram</label><div class="at-input"><span>@</span><input type="text" id="reg_ig" placeholder="username" autocapitalize="none" autocomplete="off" spellcheck="false" /></div></div>
+                <div class="form-group"><label>TikTok</label><div class="at-input"><span>@</span><input type="text" id="reg_tiktok" placeholder="username" autocapitalize="none" autocomplete="off" spellcheck="false" /></div></div>
               </div>
             </div>
           </div>
@@ -552,9 +582,10 @@
             <h4><i class="fas fa-file-signature"></i> Pernyataan Persetujuan</h4>
             <p>Dengan mengirim formulir ini, saya menyatakan bahwa:</p>
             <ul>
-              <li>Seluruh data yang saya isi adalah benar dan usia saya minimal 18 tahun.</li>
+              <li>Seluruh data yang saya isi adalah benar, usia saya minimal 18 tahun, dan saya berstatus single.</li>
+              <li>Akun sosial media yang saya cantumkan adalah milik saya dan hanya digunakan Admin untuk keperluan pengecekan.</li>
+              <li>Saya tidak akan mencantumkan akun sosial media pada profil maupun membagikannya kepada klien.</li>
               <li>Saya bersedia mematuhi peraturan dan ketentuan talent serta menjaga privasi klien.</li>
-              <li>Saya tidak akan mencantumkan maupun membagikan akun sosial media.</li>
               <li>Saya menyetujui sistem fee 70% Talent dan 30% Admin, dengan pembayaran melalui Admin dan pencairan fee setelah sesi selesai.</li>
             </ul>
             <button type="button" class="rules-link" onclick="openRulesModal()"><i class="fas fa-book-open"></i> Baca peraturan lengkap</button>
@@ -995,9 +1026,9 @@
 
 <script src="app.js?v=2"></script>
 <script src="patch.js?v=3"></script>
-<script src="admin.js?v=8"></script>
+<script src="admin.js?v=9"></script>
 <script src="packages.js?v=2"></script>
-<script src="talent-rules.js?v=1"></script>
+<script src="talent-rules.js?v=2"></script>
 <script src="pwa.js"></script>
 <script src="emoji-fallback.js"></script>
 </body>
