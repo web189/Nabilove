@@ -1,0 +1,82 @@
+/* Nabillove — talent-rules.css : peraturan pendaftaran talent (HP & PC) */
+.rules-section { margin: 0 0 2.5rem; padding: clamp(1.15rem, 3.2vw, 2.4rem); background: var(--bg-card); border: 1px solid var(--border); border-radius: 28px; box-shadow: var(--shadow-sm); }
+.rules-head { text-align: center; max-width: 720px; margin: 0 auto clamp(1.2rem, 3vw, 2rem); }
+.rules-badge { display: inline-flex; align-items: center; gap: .45rem; background: var(--pink-light); color: var(--pink-deep); font-weight: 800; font-size: .72rem; letter-spacing: .09em; text-transform: uppercase; padding: .45rem .95rem; border-radius: 999px; margin-bottom: .9rem; }
+.rules-head h2 { font-family: var(--font-display); font-size: clamp(1.45rem, 4.6vw, 2.2rem); font-weight: 700; line-height: 1.2; color: var(--text); margin-bottom: .55rem; }
+.rules-head h2 em { color: var(--pink-deep); font-style: italic; }
+.rules-head p { color: var(--text-sec); font-size: clamp(.86rem, 2.4vw, .98rem); line-height: 1.7; }
+
+.rules-grid { display: grid; grid-template-columns: 1fr; gap: .8rem; align-items: start; }
+@media (min-width: 900px) { .rules-grid { grid-template-columns: repeat(2, 1fr); gap: 1.15rem; align-items: stretch; } }
+
+.rule-card { background: var(--bg); border: 1px solid var(--border); border-radius: 20px; overflow: hidden; transition: border-color .2s, box-shadow .2s; }
+.rule-card[open] { border-color: color-mix(in srgb, var(--pink-deep) 35%, var(--border)); box-shadow: var(--shadow-sm); }
+.rule-card summary { display: flex; align-items: center; gap: .85rem; padding: .95rem 1.1rem; cursor: pointer; list-style: none; -webkit-tap-highlight-color: transparent; min-height: 64px; }
+.rule-card summary::-webkit-details-marker { display: none; }
+.rule-ic { flex: 0 0 auto; width: 44px; height: 44px; border-radius: 14px; display: inline-flex; align-items: center; justify-content: center; color: #fff; font-size: 1.05rem; background: linear-gradient(135deg, #ec6f9b, #b8144a); box-shadow: 0 8px 18px rgba(200, 30, 91, .25); }
+.rule-t { flex: 1; min-width: 0; font-family: var(--font-display); font-weight: 700; font-size: 1.05rem; line-height: 1.25; color: var(--text); }
+.rule-t small { display: block; font-family: var(--font-body, sans-serif); font-size: .66rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: .15rem; }
+.rule-chev { flex: 0 0 auto; color: var(--text-muted); font-size: .85rem; transition: transform .25s; }
+.rule-card[open] .rule-chev { transform: rotate(180deg); }
+.rule-card.locked summary { cursor: default; }
+.rule-card.locked .rule-chev { display: none; }
+
+.rule-card ul { list-style: none; margin: 0; padding: .1rem 1.1rem 1.15rem; display: flex; flex-direction: column; gap: .7rem; }
+.rule-card li { position: relative; padding-left: 1.55rem; font-size: .9rem; line-height: 1.65; color: var(--text-sec); }
+.rule-card li::before { content: ''; position: absolute; left: .1rem; top: .5em; width: .62rem; height: .62rem; border-radius: 50%; background: var(--pink-deep); box-shadow: 0 0 0 4px color-mix(in srgb, var(--pink-deep) 16%, transparent); }
+.rule-card li strong { color: var(--text); font-weight: 800; }
+
+/* ketentuan larangan: penekanan visual */
+.rule-warn { border-color: rgba(185, 28, 28, .28); background: color-mix(in srgb, #b91c1c 5%, var(--bg)); }
+.rule-warn[open] { border-color: rgba(185, 28, 28, .5); }
+.rule-warn .rule-ic { background: linear-gradient(135deg, #ef4444, #991b1b); box-shadow: 0 8px 18px rgba(185, 28, 28, .28); }
+.rule-warn li::before { background: #b91c1c; box-shadow: 0 0 0 4px rgba(185, 28, 28, .14); }
+
+/* pembagian fee */
+.fee-bar { display: flex; height: 46px; margin: .1rem 1.1rem 1rem; border-radius: 14px; overflow: hidden; font-weight: 800; font-size: .88rem; letter-spacing: .02em; }
+.fee-bar span { display: flex; align-items: center; justify-content: center; color: #fff; white-space: nowrap; }
+.fee-t { flex: 70; background: linear-gradient(135deg, #ec6f9b, #b8144a); }
+.fee-a { flex: 30; background: #2b1530; }
+
+.rules-foot { display: flex; gap: .65rem; align-items: flex-start; margin: 1.4rem 0 0; padding-top: 1.1rem; border-top: 1px dashed var(--border); color: var(--text-sec); font-size: .88rem; line-height: 1.65; }
+.rules-foot i { color: var(--pink-deep); margin-top: .25rem; }
+
+/* catatan di langkah profil */
+.reg-note { display: flex; gap: .6rem; align-items: flex-start; font-size: .84rem; line-height: 1.6; background: var(--pink-light); color: var(--pink-deep); border-radius: 14px; padding: .8rem 1rem; margin-bottom: 1rem; }
+.reg-note i { margin-top: .22rem; }
+
+/* pernyataan persetujuan (langkah 3) */
+.agree-box { margin: 1rem 0 1.1rem; padding: 1.1rem 1.15rem; border: 1.5px solid color-mix(in srgb, var(--pink-deep) 40%, var(--border)); border-radius: 18px; background: color-mix(in srgb, var(--pink-deep) 5%, var(--bg-card)); }
+.agree-box h4 { display: flex; align-items: center; gap: .55rem; font-family: var(--font-display); font-size: 1.05rem; margin-bottom: .35rem; color: var(--text); }
+.agree-box h4 i { color: var(--pink-deep); }
+.agree-box > p { font-size: .86rem; color: var(--text-sec); margin-bottom: .6rem; }
+.agree-box ul { list-style: none; margin: 0 0 .8rem; padding: 0; display: flex; flex-direction: column; gap: .5rem; }
+.agree-box li { position: relative; padding-left: 1.3rem; font-size: .85rem; line-height: 1.6; color: var(--text-sec); }
+.agree-box li::before { content: ''; position: absolute; left: .1rem; top: .55em; width: .5rem; height: .5rem; border-radius: 50%; background: var(--pink-deep); }
+.rules-link { background: none; border: 0; padding: .35rem 0; margin-bottom: .7rem; color: var(--pink-deep); font: 700 .86rem var(--font-body, sans-serif); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; display: inline-flex; gap: .45rem; align-items: center; min-height: 40px; }
+.agree-check { display: flex; align-items: flex-start; gap: .75rem; padding: .85rem 1rem; background: var(--bg-card); border: 1.5px solid var(--border); border-radius: 14px; cursor: pointer; font-weight: 700; font-size: .9rem; line-height: 1.5; color: var(--text); }
+.agree-check input { flex: 0 0 auto; width: 22px; height: 22px; margin-top: .05rem; accent-color: var(--pink-deep); cursor: pointer; }
+.agree-check:has(input:checked) { border-color: var(--pink-deep); background: var(--pink-light); }
+.agree-box.shake { animation: agreeShake .45s; }
+@keyframes agreeShake { 20%, 60% { transform: translateX(-6px); } 40%, 80% { transform: translateX(6px); } }
+
+/* di dalam modal */
+.rules-in-modal .rules-grid { grid-template-columns: 1fr; gap: .8rem; }
+.rules-in-modal .rule-card { background: var(--bg-card); }
+.rules-modal-body { margin-top: .6rem; }
+
+@media (max-width: 640px) {
+  .rules-section { border-radius: 22px; padding: 1.15rem .9rem 1.3rem; margin-bottom: 1.6rem; }
+  .rule-card summary { padding: .8rem .9rem; gap: .7rem; min-height: 60px; }
+  .rule-ic { width: 40px; height: 40px; border-radius: 12px; }
+  .rule-t { font-size: .98rem; }
+  .rule-card ul { padding: 0 .95rem 1rem; }
+  .rule-card li { font-size: .86rem; }
+  .fee-bar { margin: 0 .95rem .9rem; height: 42px; font-size: .8rem; }
+  .agree-box { padding: 1rem .9rem; }
+}
+@media (prefers-reduced-motion: reduce) { .agree-box.shake { animation: none; } }
+
+/* dua container berurutan: jangan menumpuk jarak */
+#page-daftar-talent .rules-wrap { padding-bottom: 0; }
+#page-daftar-talent .rules-wrap + .container { padding-top: 0; }

@@ -53,7 +53,7 @@
     function v(id) { var e = $(id); return e ? String(e.value).trim() : ''; }
     var id = 'ta' + String(Date.now()).slice(-7) + Math.random().toString(36).slice(2, 5), em = ['🌸', '🌺', '🌙', '⭐', '✨', '🎵', '💫', '🦋'];
     var a = { id: id, name: v('reg_nama').slice(0, 100), nickname: v('reg_panggilan').slice(0, 50), age: +v('reg_umur') || 0, gender: v('reg_gender'), location: v('reg_kota').slice(0, 80), bio: v('reg_bio').slice(0, 1000), hobbies: '', services: services, schedule: schedule,
-      avatar: em[Math.floor(Math.random() * em.length)], ig: v('reg_ig').slice(0, 60), tiktok: v('reg_tiktok').slice(0, 60), email: v('reg_email').slice(0, 120), wa: v('reg_wa').slice(0, 30), createdAt: Date.now(), status: 'Menunggu Seleksi' };
+      avatar: em[Math.floor(Math.random() * em.length)], rulesAccepted: !!($('reg_agree') && $('reg_agree').checked), rulesAcceptedAt: Date.now(), email: v('reg_email').slice(0, 120), wa: v('reg_wa').slice(0, 30), createdAt: Date.now(), status: 'Menunggu Seleksi' };
     if (!a.name || !a.wa) { toast('Nama dan nomor WhatsApp wajib diisi', 'error'); return; }
     db.ref('talentApplications/' + id).set(a).then(function () {
       toast('Pendaftaran berhasil! 🎉', 'success');
@@ -65,7 +65,7 @@
   window.approveApp = function (id) {
     var a = appsCache[id]; if (!a) return;
     function cl(x) { return String(x == null ? '' : x).replace(/[<>"`\\]/g, ''); }
-    var t = { id: a.id, name: cl(a.name), nickname: cl(a.nickname), age: +a.age || 18, gender: cl(a.gender), location: cl(a.location), bio: cl(a.bio), hobbies: cl(a.hobbies), services: (a.services || []).map(cl), schedule: (a.schedule || []).map(cl), rating: 5, bookings: 0, price: '', status: 'offline', avatar: cl(a.avatar) || '🌸', ig: cl(a.ig), tiktok: cl(a.tiktok), verified: true };
+    var t = { id: a.id, name: cl(a.name), nickname: cl(a.nickname), age: +a.age || 18, gender: cl(a.gender), location: cl(a.location), bio: cl(a.bio), hobbies: cl(a.hobbies), services: (a.services || []).map(cl), schedule: (a.schedule || []).map(cl), rating: 5, bookings: 0, price: '', status: 'offline', avatar: cl(a.avatar) || '🌸', ig: '', tiktok: '', verified: true };
     setTalents(getTalents().concat([t])); db.ref('talentApplications/' + id + '/status').set('Disetujui');
     toast('Pendaftar di-ACC ✓ Lengkapi nama & foto talent', 'success'); showAdminTab('talents'); openTalentEditor(id);
   };
@@ -76,7 +76,7 @@
   function appsBox() {
     var L = pendingApps(); if (!L.length) return '';
     return '<div class="dash-section nb-pendbox"><h3>Pendaftar baru (' + L.length + ')</h3>' + L.map(function (a) {
-      return '<div class="nb-app"><div class="nb-app-i"><strong>' + esc(a.name) + '</strong> · ' + esc(a.age) + ' thn · ' + esc(a.location) + '<small>WA: ' + esc(a.wa) + (a.email ? ' · ' + esc(a.email) : '') + (a.ig ? ' · IG ' + esc(a.ig) : '') + '</small><small>Layanan: ' + esc((a.services || []).join(', ')) + '</small>' + (a.bio ? '<p>' + esc(a.bio) + '</p>' : '') + '</div>' +
+      return '<div class="nb-app"><div class="nb-app-i"><strong>' + esc(a.name) + '</strong> · ' + esc(a.age) + ' thn · ' + esc(a.location) + '<small>WA: ' + esc(a.wa) + (a.email ? ' · ' + esc(a.email) : '') + '</small><small>Layanan: ' + esc((a.services || []).join(', ')) + '</small>' + (a.bio ? '<p>' + esc(a.bio) + '</p>' : '') + '</div>' +
         '<div class="row-act"><button type="button" class="mini ok" onclick="approveApp(\'' + esc(a.id) + '\')">ACC</button><button type="button" class="mini no" onclick="rejectApp(\'' + esc(a.id) + '\')">Tolak</button></div></div>';
     }).join('') + '</div>';
   }
@@ -192,12 +192,12 @@
     var t = old || { id: 't' + Date.now().toString(36), name: '', nickname: '', age: 20, gender: 'Perempuan', location: '', bio: '', hobbies: '', services: ['Chatting', 'Calling'], schedule: ['Malam (20-24)'], rating: 5, bookings: 0, price: '', status: 'online', avatar: '🌸', ig: '', tiktok: '', verified: true };
     var ap = appsCache[t.id] || {}, saved = false;
     var ov = overlay('<div class="nb-head"><h3>' + (isNew ? 'Tambah talent' : 'Edit talent') + '</h3><button type="button" class="nb-x2" aria-label="Tutup">✕</button></div>' +
-      (ap.wa || ap.email ? '<div class="nb-info">📋 Data pendaftar — WA: <b>' + esc(ap.wa || '-') + '</b> · Email: <b>' + esc(ap.email || '-') + '</b>' + (ap.ig ? ' · IG: <b>' + esc(ap.ig) + '</b>' : '') + '</div>' : '') + '<div class="nb-sec"><h4>Foto profil</h4>' + avatarPicker(t.id, getTalentPhotoUrl(t.id), t.avatar) + '</div>' +
+      (ap.wa || ap.email ? '<div class="nb-info">📋 Data pendaftar — WA: <b>' + esc(ap.wa || '-') + '</b> · Email: <b>' + esc(ap.email || '-') + '</b>' + '</div>' : '') + '<div class="nb-sec"><h4>Foto profil</h4>' + avatarPicker(t.id, getTalentPhotoUrl(t.id), t.avatar) + '</div>' +
       '<div class="nb-sec"><h4>Informasi</h4><div class="nb-grid">' + fld('Nama lengkap', 'ed_name', t.name) + fld('Nama panggilan', 'ed_nick', t.nickname) +
       '<label class="nb-f"><span>Gender</span><select id="ed_gender"><option' + (t.gender === 'Perempuan' ? ' selected' : '') + '>Perempuan</option><option' + (t.gender === 'Laki-laki' ? ' selected' : '') + '>Laki-laki</option></select></label>' +
       fld('Umur', 'ed_age', t.age, 'number') + fld('Kota', 'ed_loc', t.location) + fld('Harga mulai (mis. 26K)', 'ed_price', t.price) + fld('Rating (1-5)', 'ed_rating', t.rating, 'number') +
       '<label class="nb-f"><span>Status</span><select id="ed_status">' + ['online', 'busy', 'offline'].map(function (s) { return '<option' + (t.status === s ? ' selected' : '') + '>' + s + '</option>'; }).join('') + '</select></label>' +
-      fld('Instagram', 'ed_ig', t.ig) + fld('TikTok', 'ed_tk', t.tiktok) + fld('Emoji avatar', 'ed_av', t.avatar) + fld('Hobi', 'ed_hobi', t.hobbies) + '</div>' +
+      fld('Emoji avatar', 'ed_av', t.avatar) + fld('Hobi', 'ed_hobi', t.hobbies) + '</div>' +
       '<label class="nb-f"><span>Bio</span><textarea id="ed_bio" rows="3">' + esc(t.bio) + '</textarea></label>' +
       '<div class="nb-f"><span>Layanan</span><div class="nb-chks">' + chks('ed_sv', SERV, t.services) + '</div></div>' +
       '<div class="nb-f"><span>Jam tersedia</span><div class="nb-chks">' + chks('ed_sc', SCH, t.schedule) + '</div></div>' +
@@ -209,7 +209,7 @@
       var name = $('ed_name').value.trim(); if (!name) { toast('Nama wajib diisi', 'error'); return; }
       var o = Object.assign({}, t, { name: name, nickname: $('ed_nick').value.trim() || name.split(' ')[0], gender: $('ed_gender').value, age: parseInt($('ed_age').value, 10) || 18,
         location: $('ed_loc').value.trim(), price: $('ed_price').value.trim(), rating: Math.min(5, Math.max(1, parseFloat($('ed_rating').value) || 5)), status: $('ed_status').value,
-        ig: $('ed_ig').value.trim(), tiktok: $('ed_tk').value.trim(), avatar: $('ed_av').value.trim() || '🌸', hobbies: $('ed_hobi').value.trim(), bio: $('ed_bio').value.trim(),
+        ig: '', tiktok: '', avatar: $('ed_av').value.trim() || '🌸', hobbies: $('ed_hobi').value.trim(), bio: $('ed_bio').value.trim(),
         services: pick('ed_sv'), schedule: pick('ed_sc'), verified: $('ed_ver').checked, pendingApproval: false });
       if (isNew) setTalents(getTalents().concat([o])); else updateTalent(t.id, o);
       saved = true; closeOv(ov); toast(isNew ? 'Talent ditambahkan ✓' : 'Perubahan disimpan ✓', 'success'); showAdminTab('talents');

@@ -38,16 +38,17 @@
   <meta name="color-scheme" content="dark light">
   <meta name="robots" content="index, follow">
 
-  <link rel="icon" href="favicon.png" type="image/png">
-  <link rel="apple-touch-icon" href="icon-192.png">
-  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="icon" href="favicon.png?v=2" type="image/png">
+  <link rel="apple-touch-icon" href="icon-192.png?v=2">
+  <link rel="icon" type="image/png" href="favicon.png?v=2">
   <link rel="stylesheet" href="style.css?v=15" />
   <link rel="stylesheet" href="theme.css?v=15" />
   <link rel="stylesheet" href="modern.css?v=14" />
   <link rel="stylesheet" href="packages.css?v=2" />
-  <link rel="stylesheet" href="polish.css?v=1" />
+  <link rel="stylesheet" href="polish.css?v=2" />
+  <link rel="stylesheet" href="talent-rules.css?v=1" />
   <link rel="manifest" href="manifest.json">
-  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="apple-touch-icon" href="icon-192.png?v=2">
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com" />
@@ -423,6 +424,51 @@
     <h1>Daftar <em>Jadi Talent</em></h1>
     <p>Bergabung dan mulai penghasilan bersama Nabillove</p>
   </div>
+  <div class="container rules-wrap">
+    <section class="rules-section" id="talentRules" aria-labelledby="rulesTitle">
+      <div class="rules-head">
+        <span class="rules-badge"><i class="fas fa-scroll"></i> Wajib dibaca sebelum mendaftar</span>
+        <h2 id="rulesTitle">Peraturan &amp; Ketentuan <em>Talent</em></h2>
+        <p>Pelajari ketentuan berikut dengan saksama. Dengan mengirimkan formulir pendaftaran, kamu dinyatakan telah membaca dan menyetujuinya.</p>
+      </div>
+      <div class="rules-grid">
+        <details class="rule-card" open>
+          <summary><span class="rule-ic"><i class="fas fa-clipboard-check"></i></span><span class="rule-t"><small>Ketentuan 01</small>Persyaratan Pendaftar</span><i class="fas fa-chevron-down rule-chev"></i></summary>
+          <ul>
+            <li>Berusia minimal <strong>18 tahun</strong>.</li>
+            <li>Mengisi data diri dengan benar dan lengkap, termasuk nomor WhatsApp dan email yang aktif.</li>
+            <li>Menyiapkan <strong>2–3 foto terbaik</strong> dengan wajah terlihat jelas, tidak buram, dan tanpa filter berlebihan. Foto bersifat privat dan hanya digunakan untuk proses seleksi.</li>
+          </ul>
+        </details>
+        <details class="rule-card">
+          <summary><span class="rule-ic"><i class="fas fa-user-shield"></i></span><span class="rule-t"><small>Ketentuan 02</small>Etika &amp; Privasi Klien</span><i class="fas fa-chevron-down rule-chev"></i></summary>
+          <ul>
+            <li>Bersedia mematuhi seluruh peraturan dan ketentuan talent Nabillove.</li>
+            <li>Menjaga kerahasiaan dan privasi klien, termasuk identitas serta isi percakapan.</li>
+            <li>Menjalankan layanan dengan sopan dan profesional, serta tidak melayani konten vulgar atau aktivitas yang melanggar hukum.</li>
+          </ul>
+        </details>
+        <details class="rule-card rule-warn">
+          <summary><span class="rule-ic"><i class="fas fa-ban"></i></span><span class="rule-t"><small>Ketentuan 03</small>Larangan Sosial Media</span><i class="fas fa-chevron-down rule-chev"></i></summary>
+          <ul>
+            <li>Talent <strong>tidak diperkenankan mencantumkan</strong> akun sosial media (Instagram, TikTok, dan sejenisnya) pada profil, bio, maupun materi layanan.</li>
+            <li>Talent tidak diperkenankan membagikan akun sosial media kepada klien dalam bentuk apa pun.</li>
+            <li>Pendaftaran tidak memerlukan akun sosial media.</li>
+          </ul>
+        </details>
+        <details class="rule-card">
+          <summary><span class="rule-ic"><i class="fas fa-wallet"></i></span><span class="rule-t"><small>Ketentuan 04</small>Sistem Fee &amp; Pembayaran</span><i class="fas fa-chevron-down rule-chev"></i></summary>
+          <div class="fee-bar" role="img" aria-label="Pembagian fee: 70 persen talent, 30 persen admin"><span class="fee-t">70% Talent</span><span class="fee-a">30% Admin</span></div>
+          <ul>
+            <li>Pembagian pendapatan: <strong>70% untuk Talent</strong> dan <strong>30% untuk Admin</strong>.</li>
+            <li>Seluruh pembayaran klien dilakukan melalui Admin.</li>
+            <li>Fee Talent dicairkan setelah sesi layanan selesai.</li>
+          </ul>
+        </details>
+      </div>
+      <p class="rules-foot"><i class="fas fa-heart"></i> Setelah formulir dikirim, admin akan menghubungi kamu melalui WhatsApp untuk proses selanjutnya. Terima kasih atas minat kamu bergabung dengan Nabillove.</p>
+    </section>
+  </div>
   <div class="container">
     <div class="register-wrapper">
       <div class="register-info">
@@ -464,7 +510,8 @@
           <button class="btn-primary" onclick="regNext(1)">Lanjut <i class="fas fa-arrow-right"></i></button>
         </div>
         <div id="regStep2" class="reg-step">
-          <h3>Profil & Sosial Media</h3>
+          <h3>Profil</h3>
+          <div class="reg-note"><i class="fas fa-circle-info"></i> Bio dan profil <strong>tidak boleh memuat akun sosial media</strong>, tautan, ataupun nomor kontak pribadi.</div>
           <div class="form-grid">
             <div class="form-group full"><label>Bio Singkat *</label><textarea id="reg_bio" rows="3" placeholder="Ceritakan sedikit tentang dirimu..."></textarea></div>
             <div class="form-group full"><label>Pengalaman</label><textarea id="reg_exp" rows="2" placeholder="Pengalamanmu (opsional)"></textarea></div>
@@ -479,8 +526,6 @@
                 <input type="hidden" id="reg_skill" value="Pemula">
               </div>
             </div>
-            <div class="form-group"><label>Instagram</label><input type="text" id="reg_ig" placeholder="@username" /></div>
-            <div class="form-group"><label>TikTok</label><input type="text" id="reg_tiktok" placeholder="@username" /></div>
           </div>
           <div style="display:flex;gap:.75rem">
             <button class="btn-outline" onclick="regPrev(2)"><i class="fas fa-arrow-left"></i> Kembali</button>
@@ -503,7 +548,18 @@
             <label class="check-item"><input type="checkbox" class="reg-schedule" value="Sore (17-20)"> 🌆 Sore (17–20)</label>
             <label class="check-item"><input type="checkbox" class="reg-schedule" value="Malam (20-24)"> 🌙 Malam (20–24)</label>
           </div>
-          <div style="padding:.75rem;background:var(--pink-light);border-radius:var(--radius-sm);font-size:.8rem;color:var(--pink-deep);margin:.75rem 0"><i class="fas fa-info-circle"></i> Dengan mendaftar kamu menyetujui syarat & ketentuan Nabillove.</div>
+          <div class="agree-box">
+            <h4><i class="fas fa-file-signature"></i> Pernyataan Persetujuan</h4>
+            <p>Dengan mengirim formulir ini, saya menyatakan bahwa:</p>
+            <ul>
+              <li>Seluruh data yang saya isi adalah benar dan usia saya minimal 18 tahun.</li>
+              <li>Saya bersedia mematuhi peraturan dan ketentuan talent serta menjaga privasi klien.</li>
+              <li>Saya tidak akan mencantumkan maupun membagikan akun sosial media.</li>
+              <li>Saya menyetujui sistem fee 70% Talent dan 30% Admin, dengan pembayaran melalui Admin dan pencairan fee setelah sesi selesai.</li>
+            </ul>
+            <button type="button" class="rules-link" onclick="openRulesModal()"><i class="fas fa-book-open"></i> Baca peraturan lengkap</button>
+            <label class="agree-check"><input type="checkbox" id="reg_agree"><span>Saya telah membaca dan menyetujui pernyataan di atas.</span></label>
+          </div>
           <div style="display:flex;gap:.75rem">
             <button class="btn-outline" onclick="regPrev(3)"><i class="fas fa-arrow-left"></i> Kembali</button>
             <button class="btn-primary glow-btn" onclick="submitRegister()"><i class="fas fa-paper-plane"></i> Kirim Pendaftaran</button>
@@ -941,6 +997,7 @@
 <script src="patch.js?v=3"></script>
 <script src="admin.js?v=8"></script>
 <script src="packages.js?v=2"></script>
+<script src="talent-rules.js?v=1"></script>
 <script src="pwa.js"></script>
 <script src="emoji-fallback.js"></script>
 </body>

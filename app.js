@@ -347,77 +347,77 @@ const DEFAULT_TALENTS = [
    hobbies:'Film, Music, Kuliner',services:['Chatting','Calling','Video Call','Offline Date'],
    schedule:['Siang (12-17)','Sore (17-20)','Malam (20-24)'],
    rating:4.9,bookings:234,price:'26K',status:'online',avatar:'🌸',
-   ig:'@ara.salsabila',tiktok:'@ara.sal',verified:true,username:'ara01',password:'ara123'},
+   verified:true,username:'ara01',password:'ara123'},
 
   {id:'t002',name:'Nara Putri',nickname:'Nara',age:20,gender:'Perempuan',location:'Bandung',
    bio:'Music lover & gaming enthusiast! Yuk ngobrol atau sekadar curhat. Aku teman ngobrol yang gak pernah boring 🎵',
    hobbies:'Gaming, Music, Anime',services:['Chatting','Calling','Video Call'],
    schedule:['Pagi (06-12)','Malam (20-24)'],
    rating:4.8,bookings:189,price:'26K',status:'online',avatar:'🎵',
-   ig:'@naraputri_',tiktok:'@nara.music',verified:true,username:'nara01',password:'nara123'},
+   verified:true,username:'nara01',password:'nara123'},
 
   {id:'t003',name:'Dira Cantika',nickname:'Dira',age:23,gender:'Perempuan',location:'Surabaya',
    bio:'Ceria, aktif, dan selalu ada buat dengerin ceritamu! Suka cafe hopping & travel. Offline date ke mana aja, aku siap! 🌺',
    hobbies:'Travel, Photography, Cafe Hopping',services:['Chatting','Calling','Video Call','Offline Date'],
    schedule:['Pagi (06-12)','Siang (12-17)','Sore (17-20)'],
    rating:5.0,bookings:312,price:'26K',status:'online',avatar:'🌺',
-   ig:'@dira.cantika',tiktok:'@dira_travel',verified:true,username:'dira01',password:'dira123'},
+   verified:true,username:'dira01',password:'dira123'},
 
   {id:'t004',name:'Luna Safira',nickname:'Luna',age:21,gender:'Perempuan',location:'Yogyakarta',
    bio:'Introvert tapi asik banget diajak ngobrol. Suka sastra, kopi hangat, dan hujan. Deep conversation adalah hal favoritku 🌙',
    hobbies:'Membaca, Menulis, Kopi',services:['Chatting','Calling','Video Call'],
    schedule:['Sore (17-20)','Malam (20-24)'],
    rating:4.7,bookings:145,price:'26K',status:'offline',avatar:'🌙',
-   ig:'@luna.safira_',tiktok:'@luna_writes',verified:true,username:'luna01',password:'luna123'},
+   verified:true,username:'luna01',password:'luna123'},
 
   {id:'t005',name:'Reva Anindita',nickname:'Reva',age:22,gender:'Perempuan',location:'Jakarta',
    bio:'Aktris teater yang punya segudang cerita seru! Yuk ngobrol dan temukan warna baru dalam hidupmu 🎭',
    hobbies:'Teater, Seni, Kuliner',services:['Chatting','Calling','Video Call','Offline Date'],
    schedule:['Siang (12-17)','Sore (17-20)'],
    rating:4.9,bookings:201,price:'26K',status:'online',avatar:'🎭',
-   ig:'@reva.anindita',tiktok:'@reva_art',verified:true,username:'reva01',password:'reva123'},
+   verified:true,username:'reva01',password:'reva123'},
 
   {id:'t006',name:'Zara Najwa',nickname:'Zara',age:19,gender:'Perempuan',location:'Medan',
    bio:'Foodie sejati! Selalu tau tempat makan enak yang lagi hits. Asik banget buat teman jalan & konten bareng 🍜',
    hobbies:'Kuliner, Vlogging, Dance',services:['Chatting','Calling','Offline Date'],
    schedule:['Siang (12-17)','Malam (20-24)'],
    rating:4.6,bookings:97,price:'26K',status:'online',avatar:'🍜',
-   ig:'@zara.najwa',tiktok:'@zara_food',verified:true,username:'zara01',password:'zara123'},
+   verified:true,username:'zara01',password:'zara123'},
 
   {id:'t007',name:'Sari Melati',nickname:'Sari',age:21,gender:'Perempuan',location:'Bandung',
    bio:'Pecinta kopi & buku. Deep conversation adalah hal yang paling aku suka. Ayo ngobrol sambil nongkrong! ☕',
    hobbies:'Kopi, Buku, Hiking',services:['Chatting','Calling','Video Call'],
    schedule:['Pagi (06-12)','Sore (17-20)'],
    rating:4.8,bookings:118,price:'26K',status:'online',avatar:'☕',
-   ig:'@sari.melati_',tiktok:'@sari_reads',verified:true,username:'sari01',password:'sari123'},
+   verified:true,username:'sari01',password:'sari123'},
 
   {id:'t008',name:'Kaia Rizky',nickname:'Kaia',age:20,gender:'Perempuan',location:'Jakarta',
    bio:'Dancer & content creator! Energi positif 24/7. Seru banget buat teman ngobrol soal apapun — fashion, lifestyle, atau sekadar ketawa bareng 🦋',
    hobbies:'Dance, Content Creation, Fashion',services:['Chatting','Calling','Video Call','Offline Date'],
    schedule:['Siang (12-17)','Malam (20-24)'],
    rating:4.7,bookings:163,price:'26K',status:'online',avatar:'🦋',
-   ig:'@kaia.rizky',tiktok:'@kaia_dance',verified:true,username:'kaia01',password:'kaia123'},
+   verified:true,username:'kaia01',password:'kaia123'},
 
   {id:'t009',name:'Kira Mahesa',nickname:'Kira',age:24,gender:'Laki-laki',location:'Bali',
    bio:'Pro gamer yang bisa bantu carry rank kamu! Juga seru buat teman jalan atau ngobrol soal game & lifestyle 🎮',
    hobbies:'Gaming, Surfing, Photography',services:['Chatting','Video Call','Offline Date'],
    schedule:['Pagi (06-12)','Malam (20-24)'],
    rating:4.8,bookings:278,price:'26K',status:'online',avatar:'🎮',
-   ig:'@kira.mahesa',tiktok:'@kira_pro',verified:true,username:'kira01',password:'kira123'},
+   verified:true,username:'kira01',password:'kira123'},
 
   {id:'t010',name:'Dani Pratama',nickname:'Dani',age:25,gender:'Laki-laki',location:'Semarang',
    bio:'Teman ngobrol yang hangat dan supportif. Pendengar terbaik buat kamu yang butuh teman cerita 🌟',
    hobbies:'Olahraga, Musik, Traveling',services:['Chatting','Calling','Video Call','Offline Date'],
    schedule:['Pagi (06-12)','Sore (17-20)','Malam (20-24)'],
    rating:4.7,bookings:156,price:'26K',status:'online',avatar:'🌟',
-   ig:'@dani.pratama_',tiktok:'@dani_vibe',verified:true,username:'dani01',password:'dani123'},
+   verified:true,username:'dani01',password:'dani123'},
 
   {id:'t011',name:'Rio Ardiansyah',nickname:'Rio',age:26,gender:'Laki-laki',location:'Jakarta',
    bio:'Fotografer & traveler dengan seribu cerita! Yuk cerita soal perjalanan atau foto bareng jalan-jalan 📸',
    hobbies:'Fotografi, Travel, Kuliner',services:['Chatting','Calling','Offline Date'],
    schedule:['Siang (12-17)','Sore (17-20)'],
    rating:4.6,bookings:89,price:'26K',status:'offline',avatar:'📸',
-   ig:'@rio.ardiansyah',tiktok:'@rio_lens',verified:true,username:'rio01',password:'rio123'},
+   verified:true,username:'rio01',password:'rio123'},
 ];
 
 // Bump this whenever DEFAULT_TESTIMONIALS content below changes, so returning
@@ -1032,7 +1032,6 @@ function openTalentDetail(id) {
           <div><strong style="font-size:.82rem;color:var(--text-muted)">HOBI</strong><div style="margin-top:.3rem;font-size:.88rem">${t.hobbies}</div></div>
           <div><strong style="font-size:.82rem;color:var(--text-muted)">LAYANAN</strong><div style="display:flex;flex-wrap:wrap;gap:.3rem;margin-top:.3rem">${(t.services||[]).map(s=>`<span class="tc-services"><span>${s}</span></span>`).join('')}</div></div>
           <div><strong style="font-size:.82rem;color:var(--text-muted)">JADWAL AKTIF</strong><div style="display:flex;flex-wrap:wrap;gap:.3rem;margin-top:.3rem">${(t.schedule||[]).map(s=>`<span style="padding:.2rem .6rem;background:var(--purple-light);border-radius:50px;font-size:.78rem">${s}</span>`).join('')}</div></div>
-          ${t.ig?`<div><strong style="font-size:.82rem;color:var(--text-muted)">SOSMED</strong><div style="margin-top:.3rem;font-size:.85rem"><i class="fab fa-instagram"></i> ${t.ig}${t.tiktok?` &nbsp; <i class="fab fa-tiktok"></i> ${t.tiktok}`:''}</div></div>`:''}
         </div>
         <div style="display:flex;gap:.75rem;flex-wrap:wrap">
           <button class="btn-primary glow-btn" style="flex:1;justify-content:center" onclick="openBooking('${t.id}')"><i class="fas fa-calendar-plus"></i> Booking Sekarang</button>
@@ -1272,8 +1271,6 @@ function submitRegister() {
     rating:0, bookings:0, price:'26K', status:'offline',
     avatar:emojis[Math.floor(Math.random()*emojis.length)],
     verified:false, pendingApproval:true,
-    ig:    g('reg_ig')     ? g('reg_ig').value     : '',
-    tiktok:g('reg_tiktok') ? g('reg_tiktok').value : '',
     username:'talent_'+newId, password:pass,
     email:g('reg_email').value.trim(), wa:g('reg_wa').value.trim(),
     createdAt: Date.now()
@@ -1840,12 +1837,6 @@ function renderTalentProfile(el, t) {
         <div class="form-group" style="margin-top:.75rem"><label>Hobi</label>
           <input type="text" id="editHobi" value="${t.hobbies||''}" style="width:100%;padding:.65rem 1rem;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);color:var(--text);font-size:.85rem">
         </div>
-        <div class="form-group" style="margin-top:.75rem"><label>Instagram</label>
-          <input type="text" id="editIg" value="${t.ig||''}" style="width:100%;padding:.65rem 1rem;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);color:var(--text);font-size:.85rem">
-        </div>
-        <div class="form-group" style="margin-top:.75rem"><label>TikTok</label>
-          <input type="text" id="editTiktok" value="${t.tiktok||''}" style="width:100%;padding:.65rem 1rem;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);color:var(--text);font-size:.85rem">
-        </div>
         <button class="btn-primary" style="margin-top:1.25rem;width:100%;justify-content:center" onclick="saveTalentProfile('${t.id}')">
           <i class="fas fa-save"></i> Simpan ke Firebase
         </button>
@@ -1936,13 +1927,10 @@ function refreshTalentPhotoDisplay(talentId) {
 function saveTalentProfile(id) {
   const b  = document.getElementById('editBio');
   const h  = document.getElementById('editHobi');
-  const ig = document.getElementById('editIg');
-  const tk = document.getElementById('editTiktok');
   const updates = {};
   if (b)  updates.bio     = b.value;
   if (h)  updates.hobbies = h.value;
-  if (ig) updates.ig      = ig.value;
-  if (tk) updates.tiktok  = tk.value;
+  updates.ig = ''; updates.tiktok = ''; /* talent tidak boleh memasang sosial media */
   updateTalent(id, updates);
   toast('Profil tersimpan ke Firebase! ✓','success');
 }
