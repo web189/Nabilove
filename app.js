@@ -645,15 +645,34 @@ function openMessageModal(talentId, talentName, presetText) {
   openModal('messageModal');
 }
 
+/* WhatsApp admin (format internasional, tanpa +). Ubah di sini jika nomor berganti. */
+const ADMIN_WA = '6287778787822';
+const ADMIN_WA_TEXT = '+62 877-7878-7822';
+
+/* buka WhatsApp dengan pesan terisi (harus dipanggil langsung dari klik pengguna) */
+function openWhatsApp(text, phone) {
+  const url = 'https://wa.me/' + (phone || ADMIN_WA) + '?text=' + encodeURIComponent(text || '');
+  const a = document.createElement('a');
+  a.href = url; a.target = '_blank'; a.rel = 'noopener noreferrer';
+  document.body.appendChild(a); a.click(); a.remove();
+}
+
 function submitMessage() {
   const name = (document.getElementById('msgName')||{}).value?.trim();
   const contact = (document.getElementById('msgContact')||{}).value?.trim();
   const text = (document.getElementById('msgText')||{}).value?.trim();
   if (!name || !contact || !text) { toast('Lengkapi semua kolom pesan!','error'); return; }
   const ctx = window._msgContext || {};
+  // 1) selalu masuk ke kotak pesan dasbor admin
   sendInboxMessage({ name, contact, message: text, talentId: ctx.talentId, talentName: ctx.talentName, source: ctx.talentName ? 'Chat Talent' : 'Chat Admin' });
   closeModal('messageModal');
-  toast('Pesan terkirim! Admin akan segera membalas 💌','success');
+  // 2) pesan untuk Admin juga dibuka di WhatsApp admin (pengguna tinggal menekan kirim)
+  if (!ctx.talentId) {
+    openWhatsApp('Halo Admin Nabillove 👋\n\nNama: ' + name + '\nKontak: ' + contact + '\n\nPesan:\n' + text + '\n\n(Dikirim dari website Nabillove)');
+    toast('Pesan masuk ke admin ✓ Lanjutkan kirim di WhatsApp','success');
+  } else {
+    toast('Pesan terkirim! Admin akan segera membalas 💌','success');
+  }
   document.getElementById('msgName').value = '';
   document.getElementById('msgContact').value = '';
   document.getElementById('msgText').value = '';
@@ -1092,8 +1111,98 @@ function filterPrice(cat, btn) {
 }
 
 // ── BOOKING ──
+/* Lokasi: online hanya lewat WhatsApp; offline tetap tersedia */
+const BK_LOCATIONS = ['Online (WhatsApp)','Offline — Cafe','Offline — Mall','Offline — Taman'];
+
+function bkEsc(s){ return String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function bkNum(s){ return parseInt(String(s==null?'':s).replace(/\D/g,''),10) || 0; }
+function bkRp(n){ return String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g,'.'); }
+function bkToday(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+
+/* nama layanan -> kunci daftar harga */
+function bkSvcKey(name){
+  const n = String(name||'').toLowerCase();
+  if (n.includes('video')) return 'videocall';
+  if (n.includes('call'))  return 'calling';
+  if (n.includes('chat'))  return 'chatting';
+  if (n.includes('offline')) return 'offline';
+  if (n.includes('pap'))   return 'pap';
+  return null;
+}
+const BK_QUESTION = {
+  chatting:  'Mau chatting berapa hari?',
+  calling:   'Mau calling berapa lama?',
+  videocall: 'Mau video call berapa lama?',
+  offline:   'Mau offline date berapa jam?',
+  pap:       'Mau berapa kali PAP?'
+};
+
+/* pilihan lanjutan diambil dari Pricelist (bisa diedit admin) */
+function bkVariants(key){
+  const items = (getPricelist()[key] || []).filter(i => i && i.label && bkNum(i.price) > 0);
+  const addon = items.find(i => /^tambahan/i.test(i.label)) || null;
+  let main = items.filter(i => i !== addon);
+  if (key === 'pap' && main.length === 1) {            // hanya ada harga satuan -> tawarkan jumlah
+    const unit = bkNum(main[0].price);
+    main = [1,3,5,10].map(n => ({ label: n + 'x PAP', price: bkRp(unit*n), popular: n === 3 }));
+  }
+  return { main, addon };
+}
+
+function bkRenderVariants(){
+  const box = document.getElementById('bkVariantBox'); if (!box) return;
+  const svcEl = document.getElementById('bkService');
+  const key = bkSvcKey(svcEl ? svcEl.value : '');
+  bookingData.variant = null; bookingData.addonQty = 0;
+  const v = key ? bkVariants(key) : { main: [], addon: null };
+  bookingData._v = v; bookingData._key = key;
+  if (!v.main.length) { box.innerHTML = ''; return; }
+  box.innerHTML = `<div class="bk-ask">
+    <label class="bk-q">${bkEsc(BK_QUESTION[key])} <span class="bk-req">*</span></label>
+    <div class="bk-chips">${v.main.map((it,i) => `<button type="button" class="bk-chip${it.popular?' pop':''}" onclick="bkPickVariant(${i})" aria-pressed="false">
+        ${it.popular?'<em>🔥 Terpopuler</em>':''}<strong>${bkEsc(it.label)}</strong><span>Rp ${bkEsc(it.price)}</span></button>`).join('')}</div>
+    ${v.addon ? `<div class="bk-addon"><div><strong>Tambahan jam</strong><small>Rp ${bkEsc(v.addon.price)} / jam (opsional)</small></div>
+        <div class="bk-step"><button type="button" aria-label="Kurangi" onclick="bkAddon(-1)">−</button><b id="bkAddonQty">0</b><button type="button" aria-label="Tambah" onclick="bkAddon(1)">+</button></div></div>` : ''}
+    <div class="bk-total" id="bkTotal"></div></div>`;
+  bkUpdateTotal();
+}
+function bkPickVariant(i){
+  const v = bookingData._v; if (!v || !v.main[i]) return;
+  bookingData.variant = v.main[i];
+  document.querySelectorAll('#bkVariantBox .bk-chip').forEach((c,j) => { c.classList.toggle('on', j===i); c.setAttribute('aria-pressed', j===i ? 'true' : 'false'); });
+  bkUpdateTotal();
+}
+function bkAddon(d){
+  const v = bookingData._v; if (!v || !v.addon) return;
+  bookingData.addonQty = Math.max(0, Math.min(6, (bookingData.addonQty||0) + d));
+  const q = document.getElementById('bkAddonQty'); if (q) q.textContent = bookingData.addonQty;
+  bkUpdateTotal();
+}
+/* hasil pilihan layanan (talent) -> {label,total} */
+function bkCalc(){
+  const v = bookingData.variant; if (!v) return null;
+  let total = bkNum(v.price), label = v.label;
+  const v2 = bookingData._v;
+  if ((bookingData.addonQty||0) > 0 && v2 && v2.addon) { total += bkNum(v2.addon.price) * bookingData.addonQty; label += ' + ' + bookingData.addonQty + ' Jam tambahan'; }
+  return { label, total };
+}
+function bkUpdateTotal(){
+  const el = document.getElementById('bkTotal'); if (!el) return;
+  const c = bkCalc();
+  el.innerHTML = c ? `Total <strong>Rp ${bkRp(c.total)}</strong>` : '<span>Pilih salah satu di atas untuk melihat total</span>';
+}
+
 function openBookingFromPrice(svc, price) {
   bookingData = {talent:null, serviceName:svc, servicePrice:price};
+  buildBookingModal();
+  openModal('bookingModal');
+}
+
+/* beberapa paket sekaligus (combo) */
+function openBookingCombo(items) {
+  if (!items || !items.length) return;
+  const total = items.reduce((s,i) => s + bkNum(i.price), 0);
+  bookingData = {talent:null, serviceName: items.map(i => i.label).join(' + '), servicePrice: bkRp(total), combo: items};
   buildBookingModal();
   openModal('bookingModal');
 }
@@ -1107,10 +1216,17 @@ function openBooking(id) {
   openModal('bookingModal');
 }
 
+function bkComboHTML(items){
+  const total = items.reduce((s,i) => s + bkNum(i.price), 0);
+  return `<div class="bk-combo"><strong>📦 ${items.length > 1 ? 'Paket pilihan kamu ('+items.length+')' : bkEsc(items[0].label)}</strong>
+    <ul>${items.map(i => `<li><span>${bkEsc(i.label)}</span><b>Rp ${bkEsc(bkRp(bkNum(i.price)))}</b></li>`).join('')}</ul>
+    <div class="bk-combo-total">Total <b>Rp ${bkRp(total)}</b></div></div>`;
+}
+
 function buildBookingModal() {
   bookingStep = 1;
-  const {talent, serviceName, servicePrice} = bookingData;
-  const minDate = new Date().toISOString().split('T')[0];
+  const {talent, serviceName, servicePrice, combo} = bookingData;
+  const minDate = bkToday();
   const photoUrl = talent ? getTalentPhotoUrl(talent.id) : null;
   const grad = talent ? (TALENT_GRADIENTS[talent.id]||['#fbe3ea','#e8577f']) : ['#fbe3ea','#e8577f'];
   const talentPreview = talent ? `
@@ -1121,17 +1237,19 @@ function buildBookingModal() {
       <div><strong>${talent.name}</strong><div style="font-size:.78rem;color:var(--text-muted)">${talent.location} · ⭐ ${talent.rating}</div></div>
     </div>
     <div class="form-group"><label>Pilih Layanan</label>
-      ${customSelectHTML('bkService', (talent.services||[]).map(s=>({value:s,label:s})))}
-    </div>`
-  : `<div style="padding:.85rem;background:var(--purple-light);border-radius:var(--radius-sm);margin-bottom:1.25rem">
-      <strong>📦 ${serviceName}</strong>
-      <div style="font-size:.82rem;color:var(--text-muted);margin-top:.25rem">Harga: Rp ${servicePrice}</div>
+      ${customSelectHTML('bkService', (talent.services||[]).map(s=>({value:s,label:s})), 'bkRenderVariants')}
     </div>
-    <div class="form-group"><label>Pilih Talent (Opsional)</label>
+    <div id="bkVariantBox"></div>`
+  : `${combo ? bkComboHTML(combo) : `<div style="padding:.85rem;background:var(--purple-light);border-radius:var(--radius-sm);margin-bottom:1.25rem">
+      <strong>📦 ${bkEsc(serviceName)}</strong>
+      <div style="font-size:.82rem;color:var(--text-muted);margin-top:.25rem">Harga: Rp ${bkEsc(servicePrice)}</div>
+    </div>`}
+    <div class="form-group" style="margin-top:1rem"><label>Pilih Talent (Opsional)</label>
       ${customSelectHTML('bkTalent', [{value:'',label:'Pilihkan oleh admin'}, ...getTalents().filter(t=>t.status==='online').map(t=>({value:t.id,label:`${t.avatar} ${t.name} — ${t.location}`}))])}
     </div>`;
 
   const content = document.getElementById('bookingContent'); if (!content) return;
+  const inputStyle = 'width:100%;padding:.65rem 1rem;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);color:var(--text)';
   content.innerHTML = `
     <div class="booking-progress"><div class="bp-dot active" id="bp1"></div><div class="bp-dot" id="bp2"></div><div class="bp-dot" id="bp3"></div></div>
     <div class="booking-step active" id="bkStep1">
@@ -1141,9 +1259,9 @@ function buildBookingModal() {
     </div>
     <div class="booking-step" id="bkStep2">
       <h4 style="font-family:var(--font-display);margin-bottom:1.25rem">2. Pilih Jadwal</h4>
-      <div class="form-group"><label>Tanggal</label><input type="date" id="bkDate" min="${minDate}" style="width:100%;padding:.65rem 1rem;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);color:var(--text)" /></div>
-      <div class="form-group" style="margin-top:.75rem"><label>Jam</label>${customSelectHTML('bkTime', ['09:00 — Pagi','12:00 — Siang','15:00 — Sore','18:00 — Petang','20:00 — Malam'].map(v=>({value:v,label:v})))}</div>
-      <div class="form-group" style="margin-top:.75rem"><label>Lokasi/Platform</label>${customSelectHTML('bkLocation', ['Online (WhatsApp)','Online (Discord)','Online (Zoom)','Offline — Cafe','Offline — Mall','Offline — Taman'].map(v=>({value:v,label:v})))}</div>
+      <div class="form-group"><label>Tanggal</label><input type="date" id="bkDate" min="${minDate}" style="${inputStyle}" /></div>
+      <div class="form-group" style="margin-top:.75rem"><label>Jam (WIB)</label><input type="time" id="bkTime" style="${inputStyle}" /><small class="bk-hint">Isi sendiri jam mulai yang kamu mau, contoh 20:30.</small></div>
+      <div class="form-group" style="margin-top:.75rem"><label>Lokasi/Platform</label>${customSelectHTML('bkLocation', BK_LOCATIONS.map(v=>({value:v,label:v})))}</div>
       <div style="display:flex;gap:.75rem;margin-top:1rem">
         <button class="btn-outline" style="flex:1;justify-content:center" onclick="bkPrev(2)"><i class="fas fa-arrow-left"></i> Kembali</button>
         <button class="btn-primary" style="flex:1;justify-content:center" onclick="bkNext(2)">Lanjut <i class="fas fa-arrow-right"></i></button>
@@ -1151,19 +1269,69 @@ function buildBookingModal() {
     </div>
     <div class="booking-step" id="bkStep3">
       <h4 style="font-family:var(--font-display);margin-bottom:1.25rem">3. Data Pemesan</h4>
-      <div class="form-group"><label>Nama Lengkap *</label><input type="text" id="bkName" placeholder="Nama lengkapmu" style="width:100%;padding:.65rem 1rem;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);color:var(--text)" /></div>
-      <div class="form-group" style="margin-top:.75rem"><label>WhatsApp *</label><input type="text" id="bkWa" placeholder="08xxxxxxxxxx" style="width:100%;padding:.65rem 1rem;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);color:var(--text)" /></div>
-      <div class="form-group" style="margin-top:.75rem"><label>Catatan</label><textarea id="bkNote" rows="2" placeholder="Pesan untuk talent..." style="width:100%;padding:.65rem 1rem;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);color:var(--text);resize:vertical"></textarea></div>
+      <div id="bkSummary"></div>
+      <div class="form-group"><label>Nama Lengkap *</label><input type="text" id="bkName" placeholder="Nama lengkapmu" style="${inputStyle}" /></div>
+      <div class="form-group" style="margin-top:.75rem"><label>WhatsApp *</label><input type="text" id="bkWa" placeholder="08xxxxxxxxxx" style="${inputStyle}" /></div>
+      <div class="form-group" style="margin-top:.75rem"><label>Catatan</label><textarea id="bkNote" rows="2" placeholder="Pesan untuk talent..." style="${inputStyle};resize:vertical"></textarea></div>
       <div style="padding:.7rem;background:var(--pink-light);border-radius:var(--radius-sm);font-size:.78rem;color:var(--pink-deep);margin:.75rem 0"><i class="fas fa-shield-alt"></i> Data kamu aman & hanya untuk keperluan booking.</div>
       <div style="display:flex;gap:.75rem">
         <button class="btn-outline" style="flex:1;justify-content:center" onclick="bkPrev(3)"><i class="fas fa-arrow-left"></i> Kembali</button>
         <button class="btn-primary glow-btn" style="flex:1;justify-content:center" onclick="submitBookingFinal()"><i class="fas fa-check"></i> Konfirmasi</button>
       </div>
     </div>`;
+  if (talent) bkRenderVariants();
+}
+
+/* kumpulkan pilihan pemesan menjadi satu objek */
+function bkCollect(){
+  const {talent, serviceName, servicePrice, combo} = bookingData;
+  const serviceEl = document.getElementById('bkService');
+  const talentEl  = document.getElementById('bkTalent');
+  let service, total;
+  if (talent) {
+    const base = serviceEl ? serviceEl.value : 'Chatting';
+    const c = bkCalc();
+    if (c) { service = c.label.toLowerCase().includes(base.toLowerCase()) ? c.label : base + ' ' + c.label; total = bkRp(c.total); }
+    else   { service = base; total = talent.price || '0'; }
+  } else { service = serviceName; total = servicePrice || '0'; }
+  let talentName = 'Ditentukan Admin';
+  if (talent) talentName = talent.name;
+  else if (talentEl && talentEl.value) { const sel = getTalents().find(x => x.id===talentEl.value); talentName = sel ? sel.name : 'Ditentukan Admin'; }
+  return {
+    service, total, talentName, items: combo || null,
+    date: (document.getElementById('bkDate')||{}).value || bkToday(),
+    time: (document.getElementById('bkTime')||{}).value || '',
+    location: (document.getElementById('bkLocation')||{}).value || 'Online (WhatsApp)'
+  };
+}
+function bkFmtDate(d){ try { return new Date(d+'T00:00:00').toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'}); } catch(e){ return d; } }
+function bkFillSummary(){
+  const el = document.getElementById('bkSummary'); if (!el) return;
+  const o = bkCollect();
+  el.innerHTML = `<div class="bk-summary"><h5>Ringkasan Pesanan</h5>
+    <div><span>Layanan</span><b>${bkEsc(o.service)}</b></div>
+    <div><span>Talent</span><b>${bkEsc(o.talentName)}</b></div>
+    <div><span>Jadwal</span><b>${bkEsc(bkFmtDate(o.date))}, ${bkEsc(o.time)} WIB</b></div>
+    <div><span>Lokasi</span><b>${bkEsc(o.location)}</b></div>
+    <div class="bk-sum-total"><span>Total</span><b>Rp ${bkEsc(o.total)}</b></div></div>`;
 }
 
 function bkNext(step) {
-  if (step===2) { const d=document.getElementById('bkDate'); if(!d||!d.value){toast('Pilih tanggal dulu!','error');return;} }
+  if (step===1 && bookingData.talent) {
+    const v = bookingData._v;
+    if (v && v.main && v.main.length && !bookingData.variant) { toast('Jawab dulu: ' + (BK_QUESTION[bookingData._key]||'pilih durasi'),'error'); return; }
+  }
+  if (step===2) {
+    const d=document.getElementById('bkDate'), t=document.getElementById('bkTime');
+    if(!d||!d.value){toast('Pilih tanggal dulu!','error');return;}
+    if(!t||!t.value){toast('Isi jam dulu!','error');return;}
+    if (d.value < bkToday()) { toast('Tanggal sudah lewat','error'); return; }
+    if (d.value === bkToday()) {
+      const n = new Date(), hhmm = String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');
+      if (t.value <= hhmm) { toast('Jam sudah lewat. Pilih jam yang akan datang.','error'); return; }
+    }
+    bkFillSummary();
+  }
   const curr = document.getElementById('bkStep'+step);
   const next  = document.getElementById('bkStep'+(step+1));
   if (curr) curr.classList.remove('active');
@@ -1191,41 +1359,32 @@ function submitBookingFinal() {
   const wa   = (document.getElementById('bkWa')  ||{}).value||'';
   if (!name.trim()||!wa.trim()) { toast('Lengkapi nama dan WhatsApp!','error'); return; }
 
-  const {talent, serviceName, servicePrice} = bookingData;
-  const serviceEl = document.getElementById('bkService');
-  const talentEl  = document.getElementById('bkTalent');
-  const service   = talent ? (serviceEl?serviceEl.value:'Chatting') : serviceName;
-
-  let talentName = 'Ditentukan Admin';
-  if (talent) { talentName = talent.name; }
-  else if (talentEl && talentEl.value) {
-    const sel = getTalents().find(x => x.id===talentEl.value);
-    talentName = sel ? sel.name : 'Ditentukan Admin';
-  }
-
-  const date = (document.getElementById('bkDate')||{}).value || new Date().toISOString().split('T')[0];
+  const o = bkCollect();
+  const {talent, combo} = bookingData;
   const newOrder = {
     id:       'ORD' + String(Date.now()).slice(-8),
     customer: name.trim(),
     wa:       wa.trim(),
-    talent:   talentName,
-    service,
-    date,
-    location: (document.getElementById('bkLocation')||{}).value||'Online',
+    talent:   o.talentName,
+    service:  o.service,
+    date:     o.date,
+    time:     o.time,
+    location: o.location,
     note:     (document.getElementById('bkNote')||{}).value||'',
     status:   'Menunggu',
-    total:    servicePrice || (talent?talent.price:'0'),
+    total:    o.total,
     createdAt: Date.now()
   };
+  if (combo) newOrder.items = combo.map(i => ({ group: i.group||'', label: i.label, price: i.price }));
 
   // Simpan ke Firebase Realtime Database
   addOrder(newOrder);
+  if (combo && typeof window.pkClearSelection === 'function') window.pkClearSelection();
 
-  // Juga kirim ke talentApplications jika daftar talent
   closeModal('bookingModal');
   toast('Booking berhasil dikirim! 🎉', 'success');
   setTimeout(() => showNotifModal(
-    `Booking <strong>${service}</strong> dengan <strong>${talentName}</strong> berhasil!<br><br>Konfirmasi dikirim ke WhatsApp <strong>${wa.trim()}</strong> dalam 5–15 menit.`,
+    `Booking <strong>${bkEsc(o.service)}</strong> dengan <strong>${bkEsc(o.talentName)}</strong> berhasil!<br><br>Konfirmasi dikirim ke WhatsApp <strong>${bkEsc(wa.trim())}</strong> dalam 5–15 menit.`,
     talent ? talent.avatar : '💝'
   ), 400);
 }
@@ -1485,7 +1644,7 @@ function ordersTable(orders, editable=false) {
       <td><strong>${o.customer}</strong>${o.wa?`<br><small style="color:var(--text-muted)">${o.wa}</small>`:''}</td>
       <td>${o.talent}</td>
       <td style="font-size:.82rem">${o.service}</td>
-      <td style="font-size:.82rem">${o.date}</td>
+      <td style="font-size:.82rem">${o.date}${o.time?`<br><small style="color:var(--text-muted)">${o.time} WIB</small>`:''}</td>
       <td style="font-weight:700;color:var(--pink-deep)">Rp ${o.total}</td>
       <td><span class="status-badge ${o.status==='Selesai'?'badge-done':o.status==='Aktif'?'badge-active':o.status==='Ditolak'?'badge-rejected':'badge-pending'}">${o.status}</span></td>
       ${editable?`<td><select style="font-size:.78rem;border:1px solid var(--border);border-radius:8px;padding:.3rem .5rem;background:var(--bg);color:var(--text)" onchange="updateOrderStatus('${o.id}',this.value)"><option ${o.status==='Menunggu'?'selected':''}>Menunggu</option><option ${o.status==='Aktif'?'selected':''}>Aktif</option><option ${o.status==='Selesai'?'selected':''}>Selesai</option><option ${o.status==='Ditolak'?'selected':''}>Ditolak</option></select></td>`:''}

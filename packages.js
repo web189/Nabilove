@@ -40,6 +40,7 @@
 
   /* ---------- state ---------- */
   var cache = null; /* null = belum pernah disimpan admin → tampil contoh */
+  var selected = {}; /* paket yang dipilih pengunjung untuk dipesan sekaligus (combo): { id: true } */
   function clone(o) { return JSON.parse(JSON.stringify(o)); }
   function norm(p, i) {
     return {
@@ -70,12 +71,13 @@
   function cardHTML(p) {
     var n = toNum(p.price), o = toNum(p.oldPrice), disc = p.promo || (o > n && n > 0 ? 'Hemat ' + Math.round((o - n) / o * 100) + '%' : '');
     var ul = '<ul class="pk-list">' + p.perks.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ul>';
-    var cta = '<button type="button" class="pk-cta" data-pk="' + esc(p.id) + '">Pesan</button>';
+    var on = !!selected[p.id];
+    var cta = '<button type="button" class="pk-cta' + (on ? ' is-on' : '') + '" data-pk="' + esc(p.id) + '" aria-pressed="' + on + '">' + (on ? '✓ Dipilih · Batal' : '+ Pilih Paket') + '</button>';
     var oldH = o > n ? '<s>' + short(o) + '</s>' : '';
     if (p.layout === 'row') {
-      return '<div class="pk-card pk-row' + (p.popular ? ' is-pop' : '') + '" style="' + colorVars(p.color) + '"><div class="pk-row-head"><h4>' + esc(p.label) + '</h4><div class="pk-row-price">' + oldH + '<b>' + short(n) + '</b></div></div>' + flags(p, disc) + ul + cta + '</div>';
+      return '<div class="pk-card pk-row' + (p.popular ? ' is-pop' : '') + (on ? ' is-sel' : '') + '" style="' + colorVars(p.color) + '"><div class="pk-row-head"><h4>' + esc(p.label) + '</h4><div class="pk-row-price">' + oldH + '<b>' + short(n) + '</b></div></div>' + flags(p, disc) + ul + cta + '</div>';
     }
-    return '<div class="pk-card pk-tab' + (p.popular ? ' is-pop' : '') + '" style="' + colorVars(p.color) + '"><div class="pk-label">' + esc(p.label) + '</div>' + flags(p, disc) + '<div class="pk-band">' + oldH + '<b>' + short(n) + '</b></div>' + ul + cta + '</div>';
+    return '<div class="pk-card pk-tab' + (p.popular ? ' is-pop' : '') + (on ? ' is-sel' : '') + '" style="' + colorVars(p.color) + '"><div class="pk-label">' + esc(p.label) + '</div>' + flags(p, disc) + '<div class="pk-band">' + oldH + '<b>' + short(n) + '</b></div>' + ul + cta + '</div>';
   }
   function groupsOf(L) {
     var order = [], map = {};
@@ -97,12 +99,51 @@
     if (a) a.innerHTML = h; if (b) b.innerHTML = h;
     if (s) s.classList.toggle('pk-none', !h); if (w) w.classList.toggle('pk-none', !h);
   }
-  function order(id) {
-    var p = getPkgs().filter(function (x) { return x.id === id; })[0]; if (!p) return;
-    if (typeof openBookingFromPrice === 'function') openBookingFromPrice(p.group + ' — ' + p.label, dots(toNum(p.price)));
+  /* ---------- pilih beberapa paket (combo) ---------- */
+  function activeList() { return getPkgs().filter(function (p) { return p.active; }); }
+  function pickedItems() {
+    return activeList().filter(function (p) { return selected[p.id]; }).map(function (p) { return { group: p.group, label: p.label, price: dots(toNum(p.price)) }; });
   }
+  function pruneSelection() {
+    var ids = {}; activeList().forEach(function (p) { ids[p.id] = true; });
+    Object.keys(selected).forEach(function (k) { if (!ids[k]) delete selected[k]; });
+  }
+  function onPkgPage() { var pg = (typeof currentPage !== 'undefined') ? currentPage : 'landing'; return pg === 'landing' || pg === 'pricelist'; }
+  function ensureBar() {
+    var bar = $('pkBar'); if (bar) return bar;
+    bar = document.createElement('div'); bar.id = 'pkBar'; bar.className = 'pk-bar'; bar.setAttribute('role', 'region'); bar.setAttribute('aria-label', 'Paket yang dipilih');
+    bar.innerHTML = '<div class="pk-bar-info"><b id="pkBarCount"></b><span id="pkBarNames"></span></div><div class="pk-bar-total" id="pkBarTotal"></div>' +
+      '<button type="button" class="pk-bar-clear" id="pkBarClear">Kosongkan</button><button type="button" class="pk-bar-go" id="pkBarGo">Pesan Sekarang</button>';
+    document.body.appendChild(bar);
+    $('pkBarClear').addEventListener('click', function () { window.pkClearSelection(); });
+    $('pkBarGo').addEventListener('click', function () {
+      var items = pickedItems(); if (!items.length) return;
+      if (typeof openBookingCombo === 'function') openBookingCombo(items);
+    });
+    return bar;
+  }
+  function updateBar() {
+    var items = pickedItems(), bar = ensureBar(), show = items.length > 0 && onPkgPage();
+    bar.classList.toggle('show', show); document.body.classList.toggle('pk-bar-on', show);
+    if (!items.length) return;
+    var total = items.reduce(function (s, i) { return s + toNum(i.price); }, 0);
+    $('pkBarCount').textContent = items.length + ' paket dipilih';
+    $('pkBarNames').textContent = items.map(function (i) { return i.label; }).join(' + ');
+    $('pkBarTotal').innerHTML = '<small>Total</small>Rp ' + dots(total);
+  }
+  function syncCards() {
+    [].forEach.call(document.querySelectorAll('.pk-cta[data-pk]'), function (b) {
+      var on = !!selected[b.getAttribute('data-pk')], card = b.closest('.pk-card');
+      b.classList.toggle('is-on', on); b.setAttribute('aria-pressed', on); b.textContent = on ? '✓ Dipilih · Batal' : '+ Pilih Paket';
+      if (card) card.classList.toggle('is-sel', on);
+    });
+    updateBar();
+  }
+  window.pkClearSelection = function () { selected = {}; syncCards(); };
   document.addEventListener('click', function (e) {
-    var b = e.target.closest ? e.target.closest('.pk-cta') : null; if (b) order(b.getAttribute('data-pk'));
+    var b = e.target.closest ? e.target.closest('.pk-cta') : null; if (!b) return;
+    var id = b.getAttribute('data-pk'); if (selected[id]) delete selected[id]; else selected[id] = true;
+    syncCards();
   });
 
   /* filter di halaman Pricelist: tombol "Paket & Promo" */
@@ -122,7 +163,7 @@
     if (v && v.items) cache = Object.keys(v.items).map(function (k) { return v.items[k]; }).filter(function (p) { return p && p.label; });
     else if (v && v.v) cache = [];
     else cache = null;
-    renderPublic();
+    pruneSelection(); renderPublic(); updateBar();
     var el = $('admin-tab-packages');
     if (el && el.classList.contains('active') && !document.querySelector('.nb-ov')) renderAdmin(el);
   }
@@ -201,6 +242,9 @@
       savePkgs(cur); nbCloseOv(ov); toast(old ? 'Perubahan disimpan ✓' : 'Paket ditambahkan ✓', 'success'); showAdminTab('packages');
     };
   };
+
+  var _sp = window.showPage;
+  if (typeof _sp === 'function') window.showPage = function () { var r = _sp.apply(this, arguments); setTimeout(updateBar, 60); return r; };
 
   var _sat = window.showAdminTab;
   window.showAdminTab = function (tab) { _sat.apply(this, arguments); var el = $('admin-tab-packages'); if (tab === 'packages' && el) renderAdmin(el); };
