@@ -1,8 +1,6 @@
-var V='nabi-v20',CORE=['./','index.html','style.css','theme.css','modern.css','app.js','patch.js','pwa.js','admin.js','packages.js','packages.css','polish.css','talent-rules.js','talent-rules.css','booking.css','emoji-fallback.js','firebase-config.js','logo-n.png','favicon.png','icon-192.png','manifest.json'];
-self.addEventListener('install',function(e){e.waitUntil(caches.open(V).then(function(c){return c.addAll(CORE)}).then(function(){return self.skipWaiting()}))});
-self.addEventListener('activate',function(e){e.waitUntil(caches.keys().then(function(k){return Promise.all(k.filter(function(n){return n!==V}).map(function(n){return caches.delete(n)}))}).then(function(){return self.clients.claim()}))});
-self.addEventListener('fetch',function(e){var r=e.request;if(r.method!=='GET')return;var u=new URL(r.url);
- if(u.origin!==location.origin){ /* font/ikon CDN: cache-first */
-  if(/fonts\.(googleapis|gstatic)\.com|cdnjs\.cloudflare\.com|^www\.gstatic\.com$/.test(u.host)){e.respondWith(caches.match(r).then(function(h){return h||fetch(r).then(function(n){var c=n.clone();caches.open(V).then(function(x){x.put(r,c)});return n})}))}
-  return;}
- e.respondWith(fetch(r).then(function(n){var c=n.clone();caches.open(V).then(function(x){x.put(r,c)});return n}).catch(function(){return caches.match(r).then(function(h){return h||caches.match('index.html')})}));});
+/* Service worker FUN FITNESS: cache aset statis, stale-while-revalidate, fallback offline. Naikkan V saat rilis. */
+var V='ff-v6',A=['./','index.html','login.html','register.html','member.html','admin.html','style.css','auth.css','member.css','admin.css','storage.js','app.js','pwa.js','auth.js','public.js','member.js','admin.js','avatar.js','export.js','loader.js','logo.png','favicon.png','icon-192.png','icon-512.png','manifest.webmanifest'];
+self.addEventListener('install',function(e){e.waitUntil(caches.open(V).then(function(c){return Promise.all(A.map(function(u){return c.add(u).catch(function(){})}))}).then(function(){return self.skipWaiting()}))});
+self.addEventListener('activate',function(e){e.waitUntil(caches.keys().then(function(k){return Promise.all(k.filter(function(x){return x!==V}).map(function(x){return caches.delete(x)}))}).then(function(){return self.clients.claim()}))});
+self.addEventListener('fetch',function(e){var r=e.request;if(r.method!=='GET'||new URL(r.url).origin!==location.origin)return;
+e.respondWith(caches.match(r,{ignoreSearch:true}).then(function(hit){var net=fetch(r).then(function(res){if(res&&res.ok){var cp=res.clone();caches.open(V).then(function(c){c.put(r,cp)})}return res}).catch(function(){return hit||(r.mode==='navigate'?caches.match('index.html'):undefined)});return hit||net}))});

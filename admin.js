@@ -1,480 +1,80 @@
-/* Nabillove — admin.js (dimuat setelah patch.js). Login hanya admin, kelola talent, reset data 2 tahap. */
-(function () {
-  'use strict';
-  function $(id) { return document.getElementById(id); }
-  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
-
-  /* ---- hanya admin: buang sesi talent lama, blokir halaman talent ---- */
-  try { if (currentUser && currentUser.role !== 'admin') { currentUser = null; localStorage.removeItem('lovia_session'); } } catch (e) {}
-  var _sp = window.showPage;
-  window.showPage = function (p, a, b) { if (p === 'talent-dash') p = 'landing'; var r = _sp.call(this, p, a, b); updBack(); return r; };
-
-  /* ---- Firebase live: login admin lewat Authentication, data privat hanya untuk admin ---- */
-  var live = window.__fbLive === true, appsCache = {}, attached = false;
-  function becomeAdmin() { currentUser = { role: 'admin', name: 'Admin Nabillove', username: 'admin' }; lsSet('lovia_session', currentUser); attachPrivate(); updBack(); }
-  function attachPrivate() {
-    if (attached) return; attached = true;
-    db.ref('orders').on('value', function (sn) { var v = nbEsc(sn.val()); _ordersCache = v ? Object.keys(v).map(function (k) { return v[k]; }).sort(function (a, b) { return (b.createdAt || 0) - (a.createdAt || 0); }) : []; });
-    db.ref('inbox').on('value', function (sn) { _inboxCache = nbEsc(sn.val() || {}); updateInboxBadge(); var el = $('admin-tab-inbox'); if (el && el.classList.contains('active')) renderAdminInbox(el); });
-    db.ref('talentApplications').on('value', function (sn) { appsCache = sn.val() || {}; var el = $('admin-tab-talents'); if (el && el.classList.contains('active')) renderAdminTalents(el); });
-  }
-  if (live) {
-        auth.onAuthStateChanged(function (u) {
-      if (!u) { attached = false; if (currentUser && currentUser.role === 'admin') { currentUser = null; try { localStorage.removeItem('lovia_session'); } catch (e) {} if (currentPage === 'admin') showPage('landing'); } return; }
-      db.ref('admins/' + u.uid).once('value').then(function (sn) { if (sn.val() === true) { if (!currentUser || currentUser.role !== 'admin') becomeAdmin(); else attachPrivate(); } else auth.signOut(); }).catch(function () {});
-    });
-    var _lo = window.logout; window.logout = function () { try { auth.signOut(); } catch (e) {} return _lo.apply(this, arguments); };
-  }
-  window.handleLogin = function () {
-    var u = ($('loginUser') || {}).value || '', p = ($('loginPass') || {}).value || '';
-    u = u.trim(); if (!u || !p.trim()) { toast('Isi email dan password!', 'error'); return; }
-    var keep = !$('loginRemember') || $('loginRemember').checked;
-    if (live) {
-      var email = u.indexOf('@') > -1 ? u : u + '@nabilove.com', pst;
-      try { pst = auth.setPersistence(keep ? firebase.auth.Auth.Persistence.LOCAL : firebase.auth.Auth.Persistence.SESSION); } catch (e) { pst = null; }
-      Promise.resolve(pst).catch(function () {}).then(function () { return auth.signInWithEmailAndPassword(email, p); }).then(function (c) {
-        return db.ref('admins/' + c.user.uid).once('value').then(function (sn) {
-          if (sn.val() === true) { rememberLogin(u, keep); becomeAdmin(); closeModal('loginModal'); toast('Selamat datang, Admin! 👑', 'success'); setTimeout(function () { showPage('admin'); }, 400); }
-          else { auth.signOut(); toast('Akun ini bukan admin', 'error'); }
-        });
-      }).catch(function (e) { toast(e && (e.code === 'auth/operation-not-allowed' || e.code === 'auth/configuration-not-found') ? 'Aktifkan Email/Password di Firebase Authentication' : 'Email atau password salah!', 'error'); });
-      return;
-    }
-    if (u === 'admin' && p === 'admin123') { becomeAdminLocal(); return; }
-    toast('Username atau password salah!', 'error');
-  };
-  function becomeAdminLocal() { currentUser = { role: 'admin', name: 'Admin Nabillove', username: 'admin' }; lsSet('lovia_session', currentUser); attachPrivate(); closeModal('loginModal'); toast('Selamat datang, Admin! 👑', 'success'); setTimeout(function () { showPage('admin'); }, 400); }
-
-  /* ---- Pendaftaran talent: masuk ke antrean (bukan ke data publik) ---- */
-  window.submitRegister = function () {
-    var services = [].map.call(document.querySelectorAll('.reg-service:checked'), function (c) { return c.value; }), schedule = [].map.call(document.querySelectorAll('.reg-schedule:checked'), function (c) { return c.value; });
-    if (!services.length) { toast('Pilih minimal 1 layanan!', 'error'); return; }
-    if (!schedule.length) { toast('Pilih minimal 1 jadwal!', 'error'); return; }
-    function v(id) { var e = $(id); return e ? String(e.value).trim() : ''; }
-    function rv(n) { var e = document.querySelector('input[name="' + n + '"]:checked'); return e ? e.value : ''; }
-    var id = 'ta' + String(Date.now()).slice(-7) + Math.random().toString(36).slice(2, 5), em = ['🌸', '🌺', '🌙', '⭐', '✨', '🎵', '💫', '🦋'];
-    var a = { id: id, name: v('reg_nama').slice(0, 100), nickname: v('reg_panggilan').slice(0, 50), age: +v('reg_umur') || 0, gender: v('reg_gender'), location: v('reg_kota').slice(0, 80), bio: v('reg_bio').slice(0, 1000), hobbies: '', services: services, schedule: schedule,
-      avatar: em[Math.floor(Math.random() * em.length)], height: +v('reg_tinggi') || 0, weight: +v('reg_berat') || 0, relationship: rv('reg_status'), experience: rv('reg_pengalaman'), reason: v('reg_alasan').slice(0, 600), skill: v('reg_skill').slice(0, 20),
-      ig: hnd(v('reg_ig')) ? '@' + hnd(v('reg_ig')) : '', tiktok: hnd(v('reg_tiktok')) ? '@' + hnd(v('reg_tiktok')) : '',
-      rulesAccepted: !!($('reg_agree') && $('reg_agree').checked), rulesAcceptedAt: Date.now(), email: v('reg_email').slice(0, 120), wa: v('reg_wa').slice(0, 30), createdAt: Date.now(), status: 'Menunggu Seleksi' };
-    if (!a.name || !a.wa) { toast('Nama dan nomor WhatsApp wajib diisi', 'error'); return; }
-    db.ref('talentApplications/' + id).set(a).then(function () {
-      toast('Pendaftaran berhasil! 🎉', 'success');
-      showNotifModal('Pendaftaran berhasil!<br><br>Data kamu masuk antrean seleksi admin. Admin akan menghubungi via WhatsApp dalam 1×24 jam.', '🌟');
-      setTimeout(function () { showPage('landing'); }, 3000);
-    }).catch(function () { toast('Gagal mengirim, periksa koneksi lalu coba lagi', 'error'); });
-  };
-  function pendingApps() { return Object.keys(appsCache).map(function (k) { return appsCache[k]; }).filter(function (a) { return a && a.status === 'Menunggu Seleksi'; }).sort(function (x, y) { return (y.createdAt || 0) - (x.createdAt || 0); }); }
-  window.approveApp = function (id) {
-    var a = appsCache[id]; if (!a) return;
-    function cl(x) { return String(x == null ? '' : x).replace(/[<>"`\\]/g, ''); }
-    var t = { id: a.id, name: cl(a.name), nickname: cl(a.nickname), age: +a.age || 18, gender: cl(a.gender), location: cl(a.location), bio: cl(a.bio), hobbies: cl(a.hobbies), services: (a.services || []).map(cl), schedule: (a.schedule || []).map(cl), rating: 5, bookings: 0, price: '', status: 'offline', avatar: cl(a.avatar) || '🌸', ig: '', tiktok: '', verified: true };
-    setTalents(getTalents().concat([t])); db.ref('talentApplications/' + id + '/status').set('Disetujui');
-    toast('Pendaftar di-ACC ✓ Lengkapi nama & foto talent', 'success'); showAdminTab('talents'); openTalentEditor(id);
-  };
-  window.rejectApp = function (id) {
-    var a = appsCache[id]; if (!a) return;
-    nbConfirm({ icon: '✖️', title: 'Tolak ' + esc(a.name) + '?', msg: 'Pendaftaran ini akan ditandai ditolak.', ok: 'Tolak', danger: true }, function () { db.ref('talentApplications/' + id + '/status').set('Ditolak'); toast('Pendaftar ditolak', 'info'); });
-  };
-  /* ---- data pendaftar yang HANYA tampil untuk admin (sosmed, TB/BB, alasan) ---- */
-  function hnd(x) { return String(x || '').replace(/^@/, '').replace(/[^A-Za-z0-9._]/g, '').slice(0, 40); }
-  function sosLinks(a) {
-    var ig = hnd(a.ig), tk = hnd(a.tiktok), out = [];
-    if (ig) out.push('<a href="https://www.instagram.com/' + ig + '/" target="_blank" rel="noopener noreferrer"><i class="fab fa-instagram"></i> @' + esc(ig) + '</a>');
-    if (tk) out.push('<a href="https://www.tiktok.com/@' + tk + '" target="_blank" rel="noopener noreferrer"><i class="fab fa-tiktok"></i> @' + esc(tk) + '</a>');
-    return out.length ? out.join(' &nbsp;·&nbsp; ') : '<em>belum diisi</em>';
-  }
-  function appExtra(a) {
-    var rows = [];
-    if (a.height || a.weight) rows.push('TB/BB: <b>' + esc(a.height || '-') + ' cm / ' + esc(a.weight || '-') + ' kg</b>');
-    if (a.relationship) rows.push('Status: <b>' + esc(a.relationship) + '</b>');
-    if (a.experience) rows.push('Pengalaman: <b>' + esc(a.experience) + '</b>');
-    return (rows.length ? '<small>' + rows.join(' · ') + '</small>' : '') +
-      '<small class="nb-sos">🔒 Sosmed (khusus admin): ' + sosLinks(a) + '</small>' +
-      (a.reason ? '<p class="nb-reason"><b>Alasan bergabung:</b> ' + esc(a.reason) + '</p>' : '');
-  }
-  function appsBox() {
-    var L = pendingApps(); if (!L.length) return '';
-    return '<div class="dash-section nb-pendbox"><h3>Pendaftar baru (' + L.length + ')</h3>' + L.map(function (a) {
-      return '<div class="nb-app"><div class="nb-app-i"><strong>' + esc(a.name) + '</strong> · ' + esc(a.age) + ' thn · ' + esc(a.location) + '<small>WA: ' + esc(a.wa) + (a.email ? ' · ' + esc(a.email) : '') + '</small><small>Layanan: ' + esc((a.services || []).join(', ')) + '</small>' + appExtra(a) + (a.bio ? '<p>' + esc(a.bio) + '</p>' : '') + '</div>' +
-        '<div class="row-act"><button type="button" class="mini ok" onclick="approveApp(\'' + esc(a.id) + '\')">ACC</button><button type="button" class="mini no" onclick="rejectApp(\'' + esc(a.id) + '\')">Tolak</button></div></div>';
-    }).join('') + '</div>';
-  }
-
-  /* ---- ketuk logo 5x = buka login admin ---- */
-  var taps = 0, tmr = null;
-  document.addEventListener('click', function (e) {
-    var l = e.target.closest && e.target.closest('.nav-logo,.footer-logo'); if (!l) return;
-    taps++; clearTimeout(tmr); tmr = setTimeout(function () { taps = 0; }, 2200);
-    if (taps >= 5) { taps = 0; if (currentUser && currentUser.role === 'admin') showPage('admin'); else { prefillLogin(); showLoginModal(); } }
-  }, true);
-
-  /* ---- bersihkan sisa "Mabar" pada data lama yang tersimpan ---- */
-  var _gt = window.getTalents;
-  window.getTalents = function () {
-    return _gt().map(function (t) {
-      var bio = t.bio && /mabar/i.test(t.bio) ? t.bio.replace(/mabar/gi, 'ngobrol') : t.bio;
-      var sv = t.services && t.services.indexOf('Mabar') > -1 ? t.services.filter(function (s) { return s !== 'Mabar'; }) : t.services;
-      return (bio !== t.bio || sv !== t.services) ? Object.assign({}, t, { bio: bio, services: sv }) : t;
-    });
-  };
-  var pubMode = false;
-  ['renderTalents', 'renderShowcase', 'renderHome', 'openTalentDetail'].forEach(function (n) {
-    var f = window[n]; if (!f) return;
-    window[n] = function () { pubMode = true; try { return f.apply(this, arguments); } finally { pubMode = false; } };
-  });
-  var _gt2 = window.getTalents;
-  window.getTalents = function () { var T = _gt2(); return pubMode ? T.filter(function (t) { return !(t.pendingApproval && !t.verified); }) : T; };
-  var _gp = window.getPricelist;
-  window.getPricelist = function () { var p = _gp(); if (p && p.mabar) { p = Object.assign({}, p); delete p.mabar; } return p; };
-  var _gts = window.getTestimonials;
-  window.getTestimonials = function () { return (_gts() || []).filter(function (t) { return !/mabar/i.test((t.text || '') + (t.service || '')); }); };
-
-  /* ---- dialog ---- */
-  function overlay(html, cls) {
-    var o = document.createElement('div'); o.className = 'nb-ov';
-    o.innerHTML = '<div class="nb-box ' + (cls || '') + '">' + html + '</div>';
-    document.body.appendChild(o); document.body.classList.add('nb-lock'); return o;
-  }
-  function closeOv(o) { if (o && o.parentNode) o.parentNode.removeChild(o); if (!document.querySelector('.nb-ov')) document.body.classList.remove('nb-lock'); }
-  function nbConfirm(o, cb) {
-    var ov = overlay('<div class="nb-ico">' + (o.icon || '❓') + '</div><h3>' + o.title + '</h3><p>' + o.msg + '</p><div class="nb-btns"><button type="button" class="nb-btn ghost nb-x">Batal</button><button type="button" class="nb-btn ' + (o.danger ? 'danger' : '') + ' nb-ok">' + o.ok + '</button></div>');
-    ov.querySelector('.nb-x').onclick = function () { closeOv(ov); };
-    ov.querySelector('.nb-ok').onclick = function () { closeOv(ov); cb(); };
-  }
-  window.nbConfirm = nbConfirm;
-  window.nbOverlay = overlay; window.nbCloseOv = closeOv;
-
-  /* ---- RESET DATA: 2 pertanyaan ---- */
-  window.resetData = function () {
-    nbConfirm({ icon: '⚠️', title: 'Reset semua data?', msg: 'Semua talent, foto, pesanan, harga, testimoni, dan pesan masuk akan dihapus.', ok: 'Lanjut' }, function () {
-      nbConfirm({ icon: '🛑', title: 'Yakin banget?', msg: 'Ini pertanyaan terakhir. Setelah dihapus, data <b>tidak bisa dikembalikan</b>. Tekan Hapus hanya jika kamu benar-benar yakin.', ok: 'Ya, hapus semua', danger: true }, doWipe);
-    });
-  };
-  function doWipe() {
-    try { localStorage.setItem('nabi_wiped', '1'); } catch (e) {}
-    ['talents', 'orders', 'pricelist', 'testimonials', 'customPhotos', 'inbox', 'talentApplications'].forEach(function (k) { try { db.ref(k).remove(); } catch (e) {} });
-    try { db.ref('packages').set({ v: 1 }); } catch (e) {}
-    _talentsCache = []; _ordersCache = []; _priceCache = emptyPrices(); _testiCache = []; _photosCache = {};
-    toast('Semua data sudah dihapus', 'info'); showAdminTab('settings');
-  }
-  window.renderAdminSettings = function (el) {
-    el.innerHTML = '<div class="dh"><div><h2>Pengaturan</h2><p>nabilove.com</p></div></div><div class="admin-2col-grid">' +
-      '<div class="dash-section"><h3>Akun admin</h3><p style="font-size:.88rem;color:var(--text-sec);line-height:1.7">Username: <strong>admin</strong><br>Buka login: ketuk logo Nabillove 5x.</p></div>' +
-      '<div class="dash-section nb-danger"><h3>Zona berbahaya</h3><p style="font-size:.85rem;color:var(--text-sec);margin-bottom:1rem">Hapus seluruh data situs. Kamu akan ditanya 2 kali sebelum data dihapus.</p><button type="button" class="nb-btn danger" onclick="resetData()"><i class="fas fa-triangle-exclamation"></i> Reset semua data</button></div></div>';
-  };
-
-  /* ---- KELOLA TALENT: tambah / edit / hapus ---- */
-  function av(t) { var u = getTalentPhotoUrl(t.id); return '<div class="todo-av"' + (u ? ' style="background-image:url(\'' + esc(u) + '\')"' : '') + '>' + (u ? '' : esc(t.avatar || '✨')) + '</div>'; }
-  window.buildTalentRows = function (T) {
-    if (!T.length) return '<tr><td colspan="6"><div class="empty-mini">Belum ada talent. Tekan “Tambah Talent”.</div></td></tr>';
-    T = T.slice().sort(function (a, b) { return (b.pendingApproval && !b.verified ? 1 : 0) - (a.pendingApproval && !a.verified ? 1 : 0); });
-    return T.map(function (t) {
-      var pend = t.pendingApproval && !t.verified, cls = t.status === 'online' ? 'badge-active' : t.status === 'busy' ? 'badge-pending' : 'badge-rejected';
-      var wa = pend && t.wa ? '<small>WA: ' + esc(t.wa) + '</small>' : '';
-      return '<tr' + (pend ? ' class="nb-pend"' : '') + '><td><div class="who">' + av(t) + '<div><strong>' + esc(t.name) + '</strong><small>' + esc(t.gender) + ' · ' + esc(t.age) + ' thn</small>' + wa + '</div></div></td><td>' + esc(t.location) + '</td>' +
-        '<td>' + statusSwitch(t) + '</td><td class="nw">⭐ ' + esc(t.rating) + '</td>' +
-        '<td><span class="status-badge ' + (pend ? 'badge-pending' : t.verified ? 'badge-done' : 'badge-rejected') + '">' + (pend ? 'Menunggu ACC' : t.verified ? 'Terverifikasi' : 'Belum') + '</span></td>' +
-        '<td><div class="row-act">' + (pend ? '<button type="button" class="mini ok" onclick="approveTalent(\'' + t.id + '\')">ACC</button><button type="button" class="mini no" onclick="rejectTalent(\'' + t.id + '\')">Tolak</button>' : '') +
-        '<button type="button" class="mini" onclick="openTalentEditor(\'' + t.id + '\')"><i class="fas fa-pen"></i> Edit</button>' +
-        '<button type="button" class="mini no" aria-label="Hapus" onclick="deleteTalent(\'' + t.id + '\')"><i class="fas fa-trash"></i></button></div></td></tr>';
-    }).join('');
-  };
-  window.renderAdminTalents = function (el) {
-    var T = getTalents();
-    el.innerHTML = '<div class="dh"><div><h2>Kelola talent</h2><p>' + T.length + ' talent</p></div><div style="display:flex;gap:.6rem;flex-wrap:wrap;align-items:center"><div class="search-wrap" style="min-width:200px"><i class="fas fa-search"></i><input type="text" placeholder="Cari nama atau kota" oninput="adminSearchTalent(this.value)"></div><button type="button" class="nb-btn" onclick="openTalentEditor()"><i class="fas fa-plus"></i> Tambah Talent</button></div></div>' + appsBox() +
-      '<div class="dash-section"><div class="table-scroll"><table class="admin-table"><thead><tr><th>Talent</th><th>Kota</th><th>Status</th><th>Rating</th><th>Verifikasi</th><th>Aksi</th></tr></thead><tbody id="adminTalentRows">' + buildTalentRows(T) + '</tbody></table></div></div>';
-  };
-  window.toggleVerify = function (id) { var t = getTalents().filter(function (x) { return x.id === id; })[0]; if (t) updateTalent(id, { verified: !t.verified }); showAdminTab('talents'); };
-  window.deleteTalent = function (id) {
-    var t = getTalents().filter(function (x) { return x.id === id; })[0]; if (!t) return;
-    nbConfirm({ icon: '🗑️', title: 'Hapus ' + esc(t.name) + '?', msg: 'Data dan foto talent ini akan dihapus permanen.', ok: 'Hapus', danger: true }, function () {
-      setTalents(getTalents().filter(function (x) { return x.id !== id; }));
-      try { db.ref('talents/' + id).remove(); db.ref('customPhotos/' + id).remove(); } catch (e) {}
-      if (_photosCache) delete _photosCache[id];
-      toast('Talent dihapus', 'info'); showAdminTab('talents');
-    });
-  };
-
-  var SERV = ['Chatting', 'Calling', 'Video Call', 'Offline Date', 'PAP'], SCH = ['Pagi (06-12)', 'Siang (12-17)', 'Sore (17-20)', 'Malam (20-24)'];
-  function fld(l, id, v, type) { return '<label class="nb-f"><span>' + l + '</span><input id="' + id + '" type="' + (type || 'text') + '" value="' + esc(v) + '"></label>'; }
-  function chks(name, all, sel) { return all.map(function (s) { return '<label class="nb-chk"><input type="checkbox" name="' + name + '" value="' + esc(s) + '"' + ((sel || []).indexOf(s) > -1 ? ' checked' : '') + '> ' + esc(s) + '</label>'; }).join(''); }
-  function slot(id, type, idx, url) {
-    var sfx = type === 'main' ? 'main' : 'gal' + idx, i = type === 'main' ? -1 : idx, a = "'" + id + "','" + type + "'," + i;
-    return '<div class="photo-slot"><div class="photo-slot-label">' + (type === 'main' ? '🖼️ Foto utama' : '📸 Galeri ' + (idx + 1)) + '</div>' +
-      '<div class="photo-slot-preview" id="preview-' + sfx + '-' + id + '">' + (url ? '<img src="' + esc(url) + '" alt=""><button type="button" class="photo-slot-del" onclick="deleteSlotPhoto(' + a + ')"><i class="fas fa-trash"></i></button>' : '<div class="photo-slot-empty">+</div>') + '</div>' +
-      '<div class="photo-slot-actions"><label class="photo-upload-btn"><i class="fas fa-upload"></i> Upload<input type="file" accept="image/png,image/jpeg,image/webp" style="display:none" onchange="handlePhotoFileUpload(event,' + a + ')"></label>' +
-      '<button type="button" class="photo-link-btn" onclick="showDriveLinkInput(' + a + ')"><i class="fab fa-google-drive"></i> Link</button></div>' +
-      '<div class="photo-drive-input" id="drive-input-' + sfx + '-' + id + '" style="display:none"><input type="text" id="drive-url-' + sfx + '-' + id + '" placeholder="Tempel link Google Drive"><button type="button" class="nb-btn sm" onclick="applyDriveLink(' + a + ')">Terapkan</button></div></div>';
-  }
-  function fc(cls, html) { return html.replace('class="nb-f"', 'class="nb-f ' + cls + '"'); }
-  function num(html, min, max) { return html.replace('<input ', '<input inputmode="numeric" min="' + min + '" max="' + max + '" '); }
-  function int0(id) { var n = parseInt(($(id) || {}).value, 10); return isNaN(n) ? 0 : n; }
-  window.openTalentEditor = function (id) {
-    var old = id ? getTalents().filter(function (x) { return x.id === id; })[0] : null, isNew = !old;
-    var t = old || { id: 't' + Date.now().toString(36), name: '', nickname: '', age: 20, gender: 'Perempuan', location: '', bio: '', hobbies: '', services: ['Chatting', 'Calling'], schedule: ['Malam (20-24)'], rating: 5, bookings: 0, price: '', status: 'online', avatar: '🌸', ig: '', tiktok: '', verified: true };
-    var ap = appsCache[t.id] || {}, saved = false;
-    var tb = t.height || ap.height || '', bb = t.weight || ap.weight || '';
-    var ov = overlay('<div class="nb-head"><h3>' + (isNew ? 'Tambah talent' : 'Edit talent') + '</h3><button type="button" class="nb-x2" aria-label="Tutup">✕</button></div>' +
-      (ap.wa || ap.email ? '<div class="nb-info">📋 Data pendaftar — WA: <b>' + esc(ap.wa || '-') + '</b> · Email: <b>' + esc(ap.email || '-') + '</b>' + appExtra(ap) + '</div>' : '') + '<div class="nb-sec"><h4>Foto profil</h4>' + avatarPicker(t.id, getTalentPhotoUrl(t.id), t.avatar) + '</div>' +
-      '<div class="nb-sec"><h4>Informasi</h4><div class="nb-grid nb-grid6">' + fc('s3', fld('Nama lengkap', 'ed_name', t.name)) + fc('s3', fld('Nama panggilan', 'ed_nick', t.nickname)) +
-      fc('s2', '<label class="nb-f"><span>Gender</span><select id="ed_gender"><option' + (t.gender === 'Perempuan' ? ' selected' : '') + '>Perempuan</option><option' + (t.gender === 'Laki-laki' ? ' selected' : '') + '>Laki-laki</option></select></label>') +
-      fc('s2', num(fld('Umur', 'ed_age', t.age, 'number'), 18, 60)) + fc('s2 k-kota', fld('Kota', 'ed_loc', t.location)) +
-      fc('s2', num(fld('Tinggi badan (cm)', 'ed_tb', tb, 'number'), 100, 250)) + fc('s2', num(fld('Berat badan (kg)', 'ed_bb', bb, 'number'), 25, 250)) + fc('s2', num(fld('Rating (1-5)', 'ed_rating', t.rating, 'number'), 1, 5)) +
-      fc('s3 k-last', '<label class="nb-f"><span>Status</span><select id="ed_status">' + ['online', 'busy', 'offline'].map(function (s) { return '<option' + (t.status === s ? ' selected' : '') + '>' + s + '</option>'; }).join('') + '</select></label>') +
-      fc('s3 k-last', fld('Emoji avatar', 'ed_av', t.avatar)) + '</div>' +
-      '<label class="nb-f"><span>Bio</span><textarea id="ed_bio" rows="3">' + esc(t.bio) + '</textarea></label>' +
-      '<div class="nb-f"><span>Layanan</span><div class="nb-chks">' + chks('ed_sv', SERV, t.services) + '</div></div>' +
-      '<div class="nb-f"><span>Jam tersedia</span><div class="nb-chks">' + chks('ed_sc', SCH, t.schedule) + '</div></div>' +
-      '<label class="nb-chk" style="margin-top:.4rem"><input type="checkbox" id="ed_ver"' + (t.verified ? ' checked' : '') + '> Tandai terverifikasi</label></div>' +
-      '<div class="nb-btns"><button type="button" class="nb-btn ghost nb-x">Batal</button><button type="button" class="nb-btn nb-save"><i class="fas fa-save"></i> Simpan</button></div>', 'wide');
-    function pick(n) { return [].map.call(ov.querySelectorAll('input[name="' + n + '"]:checked'), function (c) { return c.value; }); }
-    ov.querySelector('.nb-x').onclick = ov.querySelector('.nb-x2').onclick = function () { if (isNew && !saved) wipePhoto(t.id); closeOv(ov); showAdminTab('talents'); };
-    ov.querySelector('.nb-save').onclick = function () {
-      var name = $('ed_name').value.trim(); if (!name) { toast('Nama wajib diisi', 'error'); return; }
-      var h = int0('ed_tb'), w = int0('ed_bb');
-      if (h && (h < 100 || h > 250)) { toast('Tinggi badan tidak valid (100–250 cm)', 'error'); $('ed_tb').focus(); return; }
-      if (w && (w < 25 || w > 250)) { toast('Berat badan tidak valid (25–250 kg)', 'error'); $('ed_bb').focus(); return; }
-      var o = Object.assign({}, t, { name: name, nickname: $('ed_nick').value.trim() || name.split(' ')[0], gender: $('ed_gender').value, age: parseInt($('ed_age').value, 10) || 18,
-        height: h, weight: w,
-        location: $('ed_loc').value.trim(), rating: Math.min(5, Math.max(1, parseFloat($('ed_rating').value) || 5)), status: $('ed_status').value,
-        ig: '', tiktok: '', avatar: $('ed_av').value.trim() || '🌸', bio: $('ed_bio').value.trim(),
-        services: pick('ed_sv'), schedule: pick('ed_sc'), verified: $('ed_ver').checked, pendingApproval: false });
-      if (isNew) setTalents(getTalents().concat([o])); else updateTalent(t.id, o);
-      saved = true; closeOv(ov); toast(isNew ? 'Talent ditambahkan ✓' : 'Perubahan disimpan ✓', 'success'); showAdminTab('talents');
-    };
-  };
-
-  /* ===== FOTO PROFIL: satu foto, crop persegi ala WhatsApp, simpan WebP ===== */
-  function setPreview(id, url, emoji) {
-    var el = $('preview-main-' + id); if (!el) return;
-    el.innerHTML = url ? '<img src="' + esc(url) + '" alt="Foto">' : '<span>' + esc(emoji || '✨') + '</span>';
-  }
-  function wipePhoto(id) { try { db.ref('customPhotos/' + id).remove(); } catch (e) {} if (_photosCache) delete _photosCache[id]; }
-  function avatarPicker(id, url, emoji) {
-    return '<div class="nb-ava"><div class="nb-ava-pv" id="preview-main-' + id + '">' + (url ? '<img src="' + esc(url) + '" alt="Foto">' : '<span>' + esc(emoji || '✨') + '</span>') + '</div>' +
-      '<div class="nb-ava-act"><label class="nb-btn sm"><i class="fas fa-camera"></i> Pilih foto<input type="file" accept="image/*" style="display:none" onchange="handlePhotoFileUpload(event,\'' + id + '\',\'main\',-1)"></label>' +
-      '<button type="button" class="nb-btn ghost sm" onclick="deleteSlotPhoto(\'' + id + '\',\'main\',-1)">Hapus foto</button>' +
-      '<small>Geser &amp; zoom untuk memotong. Disimpan sebagai WebP agar ringan.</small></div></div>';
-  }
-  window.applyPhotoToSlot = function (id, type, idx, url) {
-    saveCustomPhotoData(id, { main: url }); /* hanya 1 foto; galeri lama ikut dibuang */
-    var t = getTalents().filter(function (x) { return x.id === id; })[0]; setPreview(id, url, t && t.avatar);
-  };
-  window.deleteSlotPhoto = function (id) {
-    nbConfirm({ icon: '🗑️', title: 'Hapus foto?', msg: 'Foto profil talent ini akan dihapus.', ok: 'Hapus', danger: true }, function () {
-      wipePhoto(id); var t = getTalents().filter(function (x) { return x.id === id; })[0]; setPreview(id, null, t && t.avatar); toast('Foto dihapus', 'info');
-    });
-  };
-  function openCropper(file, done) {
-    var url = URL.createObjectURL(file), im = new Image();
-    im.onerror = function () { URL.revokeObjectURL(url); toast('Gagal membaca foto', 'error'); };
-    im.onload = function () {
-      var ov = overlay('<div class="nb-head"><h3>Atur foto</h3><button type="button" class="nb-x2" aria-label="Tutup">✕</button></div>' +
-        '<div class="nb-crop" id="nbCrop"><img id="nbCropImg" alt="" draggable="false"><div class="nb-crop-mask"></div></div>' +
-        '<div class="nb-zoom"><span>−</span><input type="range" id="nbZoom" min="1" max="4" step="0.01" value="1" aria-label="Zoom"><span>+</span></div>' +
-        '<p class="nb-hint">Geser foto, cubit atau geser slider untuk zoom. Lingkaran = bagian yang tampil.</p>' +
-        '<div class="nb-btns"><button type="button" class="nb-btn ghost nb-x">Batal</button><button type="button" class="nb-btn nb-ok"><i class="fas fa-check"></i> Simpan foto</button></div>', 'crop');
-      var box = ov.querySelector('#nbCrop'), pi = ov.querySelector('#nbCropImg'), z = ov.querySelector('#nbZoom');
-      var V = box.clientWidth, w = im.naturalWidth, h = im.naturalHeight, s0 = V / Math.min(w, h), k = 1, x = 0, y = 0, pts = {}, last = 0;
-      pi.src = url;
-      function draw() {
-        var s = s0 * k, mx = Math.max(0, (w * s - V) / 2), my = Math.max(0, (h * s - V) / 2);
-        x = Math.max(-mx, Math.min(mx, x)); y = Math.max(-my, Math.min(my, y));
-        pi.style.width = (w * s) + 'px'; pi.style.height = (h * s) + 'px'; pi.style.left = (V / 2 + x - w * s / 2) + 'px'; pi.style.top = (V / 2 + y - h * s / 2) + 'px';
-      }
-      function dist() { var a = Object.keys(pts); if (a.length < 2) return 0; var p = pts[a[0]], q = pts[a[1]]; return Math.hypot(p.x - q.x, p.y - q.y); }
-      draw();
-      z.oninput = function () { k = parseFloat(z.value); draw(); };
-      box.addEventListener('wheel', function (e) { e.preventDefault(); k = Math.max(1, Math.min(4, k * (e.deltaY < 0 ? 1.08 : 0.93))); z.value = k; draw(); }, { passive: false });
-      box.addEventListener('pointerdown', function (e) { try { box.setPointerCapture(e.pointerId); } catch (er) {} pts[e.pointerId] = { x: e.clientX, y: e.clientY }; last = dist(); });
-      box.addEventListener('pointermove', function (e) {
-        var p = pts[e.pointerId]; if (!p) return; var n = Object.keys(pts).length;
-        if (n === 1) { x += e.clientX - p.x; y += e.clientY - p.y; }
-        p.x = e.clientX; p.y = e.clientY;
-        if (n === 2) { var d = dist(); if (last) { k = Math.max(1, Math.min(4, k * d / last)); z.value = k; } last = d; }
-        draw();
-      });
-      function up(e) { delete pts[e.pointerId]; last = 0; }
-      box.addEventListener('pointerup', up); box.addEventListener('pointercancel', up);
-      function end() { URL.revokeObjectURL(url); closeOv(ov); }
-      ov.querySelector('.nb-x').onclick = ov.querySelector('.nb-x2').onclick = end;
-      ov.querySelector('.nb-ok').onclick = function () {
-        var s = s0 * k, OUT = 512, c = document.createElement('canvas'); c.width = c.height = OUT; var g = c.getContext('2d');
-        g.fillStyle = '#fff'; g.fillRect(0, 0, OUT, OUT);
-        g.drawImage(im, (w * s / 2 - V / 2 - x) / s, (h * s / 2 - V / 2 - y) / s, V / s, V / s, 0, 0, OUT, OUT);
-        var out = c.toDataURL('image/webp', 0.82); if (out.indexOf('data:image/webp') !== 0) out = c.toDataURL('image/jpeg', 0.82);
-        end(); done(out);
-      };
-    };
-    im.src = url;
-  }
-  window.handlePhotoFileUpload = function (ev, id) {
-    var f = ev.target.files && ev.target.files[0]; ev.target.value = ''; if (!f) return;
-    if (!/^image\//.test(f.type)) { toast('Pilih file gambar (JPG/PNG/WEBP)', 'error'); return; }
-    if (f.size > 20 * 1024 * 1024) { toast('Ukuran file maksimal 20 MB', 'error'); return; }
-    openCropper(f, function (data) { applyPhotoToSlot(id, 'main', -1, data); toast('Foto tersimpan ✓ (' + Math.round(data.length * 0.75 / 1024) + ' KB, ' + (data.indexOf('image/webp') > 4 ? 'WebP' : 'JPEG') + ')', 'success'); });
-  };
-
-  /* ===== STATUS online/offline langsung dari tabel ===== */
-  function statusSwitch(t) {
-    var on = t.status === 'online', busy = t.status === 'busy';
-    return '<button type="button" class="nb-sw' + (on ? ' on' : busy ? ' busy' : '') + '" role="switch" aria-checked="' + on + '" onclick="toggleStatus(\'' + t.id + '\')"><i></i><b>' + (on ? 'Online' : busy ? 'Sibuk' : 'Offline') + '</b></button>';
-  }
-  window.toggleStatus = function (id) {
-    var t = getTalents().filter(function (x) { return x.id === id; })[0]; if (!t) return;
-    var n = t.status === 'online' ? 'offline' : 'online'; updateTalent(id, { status: n });
-    toast(esc(t.name) + ' → ' + (n === 'online' ? 'Online' : 'Offline'), 'success');
-    var q = document.querySelector('#admin-tab-talents .search-wrap input'); adminSearchTalent(q ? q.value : '');
-  };
-
-  /* ===== PESAN MASUK: salin nomor & hapus ===== */
-  function copyText(txt, ok) {
-    function fb() { var a = document.createElement('textarea'); a.value = txt; a.style.cssText = 'position:fixed;opacity:0'; document.body.appendChild(a); a.select(); try { document.execCommand('copy'); ok(); } catch (e) { toast('Gagal menyalin', 'error'); } document.body.removeChild(a); }
-    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(txt).then(ok, fb); else fb();
-  }
-  window.copyInboxPhone = function (btn) { var v = btn.getAttribute('data-p').replace(/&amp;/g, '&'); copyText(v, function () { toast('Nomor ' + v + ' disalin 📋', 'success'); }); };
-  window.deleteInboxMsg = function (id) {
-    nbConfirm({ icon: '🗑️', title: 'Hapus pesan ini?', msg: 'Pesan akan dihapus permanen.', ok: 'Hapus', danger: true }, function () {
-      try { db.ref('inbox/admin/' + id).remove(); } catch (e) {}
-      if (_inboxCache && _inboxCache.admin) delete _inboxCache.admin[id];
-      updateInboxBadge(); var el = $('admin-tab-inbox'); if (el) renderAdminInbox(el); toast('Pesan dihapus', 'info');
-    });
-  };
-  window.renderAdminInbox = function (el) {
-    var msgs = getInboxFor('admin');
-    el.innerHTML = '<div class="dh"><div><h2><i class="fas fa-envelope" style="color:var(--pink-deep)"></i> Pesan masuk</h2><p>' + msgs.length + ' pesan</p></div></div>' +
-      (msgs.length ? '<div class="inbox-list">' + msgs.map(function (m) {
-        return '<div class="inbox-item ' + (m.read ? '' : 'unread') + '" onclick="markInboxRead(\'admin\',\'' + m._id + '\');this.classList.remove(\'unread\')">' +
-          '<div class="inbox-item-top"><strong>' + m.name + '</strong>' + (m.talentName ? '<span class="inbox-tag">untuk ' + m.talentName + '</span>' : '') +
-          '<span class="inbox-time">' + new Date(m.time).toLocaleString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) + '</span></div>' +
-          '<p class="inbox-item-msg">' + m.message + '</p>' +
-          '<div class="inbox-item-contact"><i class="fas fa-phone"></i> ' + m.contact + '</div>' +
-          '<div class="nb-inb-act"><button type="button" class="nb-btn sm" data-p="' + m.contact + '" onclick="event.stopPropagation();copyInboxPhone(this)"><i class="fas fa-copy"></i> Salin nomor</button>' +
-          '<button type="button" class="nb-btn danger sm" onclick="event.stopPropagation();deleteInboxMsg(\'' + m._id + '\')"><i class="fas fa-trash"></i> Hapus</button></div></div>';
-      }).join('') + '</div>' : '<div class="empty-state"><div class="empty-state-icon"><i class="fas fa-inbox"></i></div><h3>Belum ada pesan</h3><p>Pesan dari pengunjung akan muncul di sini.</p></div>');
-  };
-
-  /* ===== v10: Lihat sebagai Tamu, login, ranking talent, promo ===== */
-  var back = document.createElement('button'); back.type = 'button'; back.className = 'nb-backadmin'; back.innerHTML = '<i class="fas fa-arrow-left"></i> Kembali ke Dasbor'; back.onclick = function () { showPage('admin'); }; document.body.appendChild(back);
-  function updBack() { if (!back) return; back.classList.toggle('show', !!(currentUser && currentUser.role === 'admin' && currentPage !== 'admin')); }
-  setInterval(updBack, 1500);
-  window.nbGuest = function () { try { closeDashSidebar('admin'); } catch (e) {} showPage('landing'); };
-  function rememberLogin(u, keep) { try { localStorage.setItem('nabi_rem', keep ? '1' : '0'); if (keep) localStorage.setItem('nabi_rem_email', u); else localStorage.removeItem('nabi_rem_email'); } catch (e) {} }
-  function prefillLogin() {
-    var keep = true, e = ''; try { keep = localStorage.getItem('nabi_rem') !== '0'; e = keep ? (localStorage.getItem('nabi_rem_email') || '') : ''; } catch (er) {}
-    if ($('loginUser')) $('loginUser').value = e; if ($('loginPass')) $('loginPass').value = ''; if ($('loginRemember')) $('loginRemember').checked = keep;
-  }
-  window.togglePw = function () { var i = $('loginPass'), ic = document.querySelector('.pw-eye i'); if (!i) return; var s = i.type === 'password'; i.type = s ? 'text' : 'password'; if (ic) ic.className = s ? 'fas fa-eye-slash' : 'fas fa-eye'; };
-
-  var pubMode = false;
-  function ranked(T) { return T.slice().sort(function (a, b) { var x = a.rank > 0 ? a.rank : 9999, y = b.rank > 0 ? b.rank : 9999; return (x - y) || ((b.rating || 0) - (a.rating || 0)); }); }
-  var _gt3 = window.getTalents;
-  window.getTalents = function () { var T = _gt3(); return pubMode ? ranked(T) : T; };
-  function pubT() { pubMode = true; try { return getTalents().filter(function (t) { return t.verified; }); } finally { pubMode = false; } }
-  var MED = ['🥇', '🥈', '🥉'];
-  function afterRender() {
-    var T = pubT(), byId = {}; T.forEach(function (t) { byId[t.id] = t; });
-    [].forEach.call(document.querySelectorAll('.talent-card'), function (c) {
-      var m = /openTalentDetail\('([^']+)'\)/.exec(c.getAttribute('onclick') || ''), t = m && byId[m[1]], old = c.querySelector('.nb-rank'); if (old) old.remove();
-      if (t && t.rank >= 1 && t.rank <= 3) { var b = document.createElement('span'); b.className = 'nb-rank r' + t.rank; b.textContent = MED[t.rank - 1] + ' Top ' + t.rank; c.appendChild(b); }
-    });
-    var cards = document.querySelectorAll('.hero-card-stack .hcard'), stack = document.querySelector('.hero-card-stack');
-    [].forEach.call(cards, function (c, i) {
-      var t = T[i]; if (!t) { c.style.display = 'none'; return; } c.style.display = '';
-      var a = c.querySelector('.hcard-avatar'), u = getTalentPhotoUrl(t.id); a.style.background = u ? 'url("' + u.replace(/"/g, '') + '") center/cover no-repeat' : 'linear-gradient(135deg,#ec6f9b,#b8144a)'; a.style.color = '#fff'; a.textContent = u ? '' : (t.name || '?').charAt(0).toUpperCase();
-      c.querySelector('strong').textContent = t.name; c.querySelector('.hcard-info span').textContent = '⭐ ' + t.rating + ' · ' + t.location;
-      var st = c.querySelector('.hcard-status'); st.className = 'hcard-status ' + (t.status === 'online' ? 'online' : 'offline'); st.textContent = t.status === 'online' ? 'Online' : t.status === 'busy' ? 'Sibuk' : 'Offline';
-    });
-    if (stack) stack.style.display = T.length ? '' : 'none';
-    var hs = document.querySelectorAll('.hstat-num')[1]; if (hs) { hs.dataset.target = T.length; if (hs.textContent !== '0') hs.textContent = T.length; }
-    var ab = document.querySelectorAll('.about-stat-num')[1]; if (ab) ab.textContent = T.length;
-  }
-  ['renderTalents', 'renderShowcase', 'renderHome', 'openTalentDetail'].forEach(function (n) {
-    var f = window[n]; if (!f) return;
-    window[n] = function () { pubMode = true; try { return f.apply(this, arguments); } finally { pubMode = false; if (n !== 'openTalentDetail') setTimeout(afterRender, 0); } };
-  });
-  setTimeout(afterRender, 1200);
-
-  /* --- Ranking talent --- */
-  function visibleT() { return ranked(getTalents().filter(function (t) { return t.verified; })); }
-  function saveRank(list) {
-    var m = {}; list.forEach(function (t, i) { m[t.id] = i + 1; });
-    setTalents(getTalents().map(function (t) { return m[t.id] ? Object.assign({}, t, { rank: m[t.id] }) : t; })); showAdminTab('rank');
-  }
-  window.moveRank = function (id, dir) {
-    var L = visibleT(), i = L.findIndex(function (t) { return t.id === id; }); if (i < 0) return;
-    var t = L.splice(i, 1)[0]; var j = dir === 'top' ? 0 : dir === 'up' ? Math.max(0, i - 1) : Math.min(L.length, i + 1); L.splice(j, 0, t); saveRank(L);
-  };
-  window.autoRank = function () { nbConfirm({ icon: '🔢', title: 'Urutkan otomatis?', msg: 'Urutan diganti berdasarkan rating tertinggi, lalu jumlah booking.', ok: 'Urutkan' }, function () { saveRank(getTalents().filter(function (t) { return t.verified; }).sort(function (a, b) { return (b.rating || 0) - (a.rating || 0) || (b.bookings || 0) - (a.bookings || 0); })); }); };
-  function renderRank(el) {
-    var L = visibleT();
-    el.innerHTML = '<div class="dh"><div><h2>Ranking talent</h2><p>Urutan tampil di situs</p></div><button type="button" class="nb-btn ghost" onclick="autoRank()"><i class="fas fa-wand-magic-sparkles"></i> Urutkan otomatis</button></div>' +
-      '<div class="dash-section"><p class="nb-hint2">Urutan ini dipakai di halaman Talent, bagian Talent Unggulan, dan kartu di beranda. Talent #1–#3 mendapat lencana Top di kartunya.</p>' +
-      (L.length ? '<div class="nb-rank-list">' + L.map(function (t, i) {
-        return '<div class="nb-rk"><div class="nb-rk-n">' + (i < 3 ? MED[i] : '#' + (i + 1)) + '</div>' + av(t) + '<div class="nb-rk-i"><strong>' + esc(t.name) + '</strong><small>' + esc(t.location) + ' · ' + esc(t.status) + '</small></div>' +
-          '<div class="nb-rk-a"><button type="button" class="mini" aria-label="Naik" ' + (i === 0 ? 'disabled' : '') + ' onclick="moveRank(\'' + t.id + '\',\'up\')"><i class="fas fa-arrow-up"></i></button>' +
-          '<button type="button" class="mini" aria-label="Turun" ' + (i === L.length - 1 ? 'disabled' : '') + ' onclick="moveRank(\'' + t.id + '\',\'down\')"><i class="fas fa-arrow-down"></i></button>' +
-          (i > 0 ? '<button type="button" class="mini" onclick="moveRank(\'' + t.id + '\',\'top\')">#1</button>' : '') + '</div></div>';
-      }).join('') + '</div>' : '<div class="empty-mini">Belum ada talent terverifikasi.</div>') + '</div>';
-  }
-
-  /* --- Promo & notifikasi --- */
-  var promoData = null, promoLoaded = false, TG = [['talents', 'Halaman Talent'], ['pricelist', 'Pricelist'], ['layanan', 'Layanan'], ['daftar-talent', 'Daftar Jadi Talent'], ['about', 'Tentang'], ['landing', 'Beranda'], ['url', 'Link luar (https://…)']];
-  function pCfg() { var s = (promoData && promoData.settings) || {}; return { enabled: s.enabled !== false, delay: +s.delay || 8, interval: +s.interval || 45, max: +s.max || 3 }; }
-  function pAll() { var d = (promoData && promoData.items) || {}; return Object.keys(d).map(function (k) { return d[k]; }).filter(function (p) { return p && p.title; }).sort(function (a, b) { return (a.createdAt || 0) - (b.createdAt || 0); }); }
-  function toMsg(p) {
-    var ext = p.target === 'url' && /^https?:\/\//i.test(p.url || '');
-    return { emoji: esc(p.emoji || '🎉'), title: esc(p.title), desc: esc(p.desc || ''), cta: esc(p.cta || 'Lihat'), ctaUrl: ext ? esc(p.url) : null, action: ext ? null : function () { showPage(p.target && p.target !== 'url' ? p.target : 'landing'); } };
-  }
-  db.ref('promos').on('value', function (s) { promoData = s.val() || null; promoLoaded = true; var el = $('admin-tab-promo'); if (el && el.classList.contains('active') && !document.querySelector('.nb-ov')) renderPromo(el); }, function () { promoLoaded = true; });
-  var pShown = 0, pIdx = 0;
-  function nextPromo() {
-    if (!promoLoaded) { setTimeout(nextPromo, 2000); return; }
-    var c = pCfg(); if (!c.enabled) return;
-    var items = promoData && promoData.items ? pAll().filter(function (p) { return p.active !== false; }).map(toMsg) : (!live ? NOTIF_MESSAGES : []);
-    if (!items.length || pShown >= c.max) return;
-    if (currentPage === 'admin' || document.querySelector('.modal-overlay.open') || document.querySelector('.nb-ov')) { setTimeout(nextPromo, 20000); return; }
-    showPremiumNotif(items[pIdx % items.length]); pIdx++; pShown++; setTimeout(nextPromo, c.interval * 1000);
-  }
-  window.schedulePopup = function () { if (_notifScheduled) return; _notifScheduled = true; setTimeout(nextPromo, pCfg().delay * 1000); };
-  window.savePromoSettings = function () {
-    var o = { enabled: $('pm_en').checked, delay: Math.max(1, +$('pm_delay').value || 8), interval: Math.max(10, +$('pm_int').value || 45), max: Math.max(1, Math.min(10, +$('pm_max').value || 3)) };
-    db.ref('promos/settings').set(o).then(function () { toast('Pengaturan promo disimpan ✓', 'success'); });
-  };
-  window.togglePromo = function (id) { var p = ((promoData && promoData.items) || {})[id]; if (!p) return; db.ref('promos/items/' + id + '/active').set(p.active === false); };
-  window.previewPromo = function (id) { var p = ((promoData && promoData.items) || {})[id]; if (p) showPremiumNotif(toMsg(p)); };
-  window.deletePromo = function (id) { nbConfirm({ icon: '🗑️', title: 'Hapus promo ini?', msg: 'Notifikasi ini tidak akan tampil lagi.', ok: 'Hapus', danger: true }, function () { db.ref('promos/items/' + id).remove().then(function () { toast('Promo dihapus', 'info'); }); }); };
-  function renderPromo(el) {
-    var c = pCfg(), L = pAll();
-    el.innerHTML = '<div class="dh"><div><h2>Promo &amp; notifikasi</h2><p>Popup yang muncul di halaman website</p></div><button type="button" class="nb-btn" onclick="openPromoEditor()"><i class="fas fa-plus"></i> Tambah promo</button></div>' +
-      '<div class="dash-section"><h3>Pengaturan tampil</h3><label class="nb-chk"><input type="checkbox" id="pm_en"' + (c.enabled ? ' checked' : '') + '> Tampilkan notifikasi promo ke pengunjung</label>' +
-      '<div class="nb-grid" style="margin-top:.8rem"><label class="nb-f"><span>Muncul pertama (detik)</span><input id="pm_delay" type="number" min="1" value="' + c.delay + '"></label><label class="nb-f"><span>Jeda antar notifikasi (detik)</span><input id="pm_int" type="number" min="10" value="' + c.interval + '"></label><label class="nb-f"><span>Maksimal per kunjungan</span><input id="pm_max" type="number" min="1" max="10" value="' + c.max + '"></label></div>' +
-      '<button type="button" class="nb-btn" onclick="savePromoSettings()"><i class="fas fa-save"></i> Simpan pengaturan</button></div>' +
-      '<div class="dash-section"><h3>Daftar promo (' + L.length + ')</h3>' + (L.length ? L.map(function (p) {
-        var tg = (TG.filter(function (x) { return x[0] === p.target; })[0] || ['', p.target || '-'])[1], on = p.active !== false;
-        return '<div class="nb-promo"><div class="nb-promo-e">' + esc(p.emoji || '🎉') + '</div><div class="nb-promo-i"><strong>' + esc(p.title) + '</strong><small>' + esc(p.desc || '') + '</small><small>Tombol “' + esc(p.cta || 'Lihat') + '” → ' + esc(tg) + '</small></div>' +
-          '<div class="nb-promo-a"><button type="button" class="nb-sw' + (on ? ' on' : '') + '" role="switch" aria-checked="' + on + '" onclick="togglePromo(\'' + p.id + '\')"><i></i><b>' + (on ? 'Aktif' : 'Mati') + '</b></button>' +
-          '<button type="button" class="mini" onclick="previewPromo(\'' + p.id + '\')"><i class="fas fa-eye"></i></button><button type="button" class="mini" onclick="openPromoEditor(\'' + p.id + '\')"><i class="fas fa-pen"></i></button><button type="button" class="mini no" onclick="deletePromo(\'' + p.id + '\')"><i class="fas fa-trash"></i></button></div></div>';
-      }).join('') : '<div class="empty-mini">Belum ada promo. ' + (live ? 'Tanpa promo, tidak ada popup yang tampil.' : 'Selama kosong, popup contoh bawaan yang tampil.') + '</div>') + '</div>';
-  }
-  window.openPromoEditor = function (id) {
-    var old = id ? ((promoData && promoData.items) || {})[id] : null, p = old || { id: 'p' + Date.now().toString(36), emoji: '🎉', title: '', desc: '', cta: 'Lihat', target: 'pricelist', url: '', active: true, createdAt: Date.now() };
-    var ov = overlay('<div class="nb-head"><h3>' + (old ? 'Edit promo' : 'Tambah promo') + '</h3><button type="button" class="nb-x2" aria-label="Tutup">✕</button></div>' +
-      '<div class="nb-grid">' + fld('Emoji', 'pe_emoji', p.emoji) + fld('Judul', 'pe_title', p.title) + '</div>' + fld('Deskripsi singkat', 'pe_desc', p.desc) +
-      '<div class="nb-grid">' + fld('Teks tombol', 'pe_cta', p.cta) + '<label class="nb-f"><span>Tombol menuju</span><select id="pe_target">' + TG.map(function (x) { return '<option value="' + x[0] + '"' + (p.target === x[0] ? ' selected' : '') + '>' + x[1] + '</option>'; }).join('') + '</select></label></div>' +
-      '<div id="pe_urlw" style="display:' + (p.target === 'url' ? 'block' : 'none') + '">' + fld('Alamat link (https://…)', 'pe_url', p.url) + '</div>' +
-      '<label class="nb-chk"><input type="checkbox" id="pe_on"' + (p.active !== false ? ' checked' : '') + '> Aktif</label>' +
-      '<div class="nb-btns"><button type="button" class="nb-btn ghost nb-x">Batal</button><button type="button" class="nb-btn nb-save"><i class="fas fa-save"></i> Simpan</button></div>', 'wide');
-    $('pe_target').onchange = function () { $('pe_urlw').style.display = this.value === 'url' ? 'block' : 'none'; };
-    ov.querySelector('.nb-x').onclick = ov.querySelector('.nb-x2').onclick = function () { closeOv(ov); };
-    ov.querySelector('.nb-save').onclick = function () {
-      var o = Object.assign({}, p, { emoji: $('pe_emoji').value.trim() || '🎉', title: $('pe_title').value.trim().slice(0, 80), desc: $('pe_desc').value.trim().slice(0, 140), cta: $('pe_cta').value.trim().slice(0, 24) || 'Lihat', target: $('pe_target').value, url: $('pe_url').value.trim().slice(0, 300), active: $('pe_on').checked });
-      if (!o.title) { toast('Judul wajib diisi', 'error'); return; }
-      if (o.target === 'url' && !/^https?:\/\//i.test(o.url)) { toast('Link harus diawali https://', 'error'); return; }
-      db.ref('promos/items/' + o.id).set(o).then(function () { closeOv(ov); toast('Promo tersimpan ✓', 'success'); showAdminTab('promo'); });
-    };
-  };
-  var _sat = window.showAdminTab;
-  window.showAdminTab = function (tab) { _sat(tab); var el = $('admin-tab-' + tab); if (tab === 'rank' && el) renderRank(el); else if (tab === 'promo' && el) renderPromo(el); };
-})();
+(function(d){
+d.addEventListener('DOMContentLoaded',function(){
+var u=FF.auth.guard('admin');if(!u)return;var db=FF.db,E=FF.esc,main=d.getElementById('main'),view='overview',q='',per='month',cq='';
+var T={overview:'Overview',members:'Member',payments:'Pembayaran',packages:'Paket & Promo',visits:'Kunjungan',reports:'Laporan',settings:'Pengaturan',logs:'Audit Log'};
+function mem(){return db.list('members').filter(function(m){return m.role==='member'})}
+function tbl(h,rows){return'<div class="tw"><table><tr>'+h.map(function(x){return'<th>'+x+'</th>'}).join('')+'</tr>'+(rows.join('')||'<tr><td colspan="'+h.length+'">Tidak ada data.</td></tr>')+'</table></div>'}
+function stat(l,v){return'<div class="card stat">'+l+'<b>'+v+'</b></div>'}
+function has(o,s){return JSON.stringify(o).toLowerCase().indexOf(s.toLowerCase())>-1}
+function range(p){var t=db.today(),y=t.slice(0,4),m=t.slice(0,7);if(p==='today')return[t,t];if(p==='7d')return[db.addDays(t,-6),t];if(p==='month')return[m+'-01',t];if(p==='year')return[y+'-01-01',t];return['0000-01-01',t]}
+function overview(){var ms=mem(),t=db.today(),tx=db.list('transactions'),c={};ms.forEach(function(m){var s=db.status(m);c[s]=(c[s]||0)+1});
+var rev=tx.filter(function(x){return x.status==='disetujui'}).reduce(function(a,x){return a+x.amount},0);
+var bars=['aktif','akan berakhir','kedaluwarsa','menunggu','nonaktif'].map(function(s){var n=c[s]||0;return'<div>'+s+' ('+n+')<div class="bar" style="width:'+(ms.length?n/ms.length*100:0)+'%"></div></div>'}).join('');
+return'<div class="grid sg">'+stat('Total member',ms.length)+stat('Member aktif',c.aktif||0)+stat('Akan berakhir',c['akan berakhir']||0)+stat('Kedaluwarsa',c.kedaluwarsa||0)+stat('Member baru bulan ini',ms.filter(function(m){return m.createdAt.slice(0,7)===t.slice(0,7)}).length)+stat('Transaksi menunggu',tx.filter(function(x){return x.status==='menunggu'}).length)+stat('Pendapatan tercatat (disetujui)',FF.rp(rev))+stat('Kunjungan hari ini',db.list('visits').filter(function(v){return v.at.slice(0,10)===t}).length)+'</div><br><div class="card"><h3>Distribusi status membership</h3>'+(ms.length?bars:'<p class="mut">Belum ada member.</p>')+'</div>'}
+function mlist(){var l=mem().filter(function(m){return!q||has([m.id,m.name,m.phone,m.email],q)});
+return tbl(['ID','Nama','HP','Email','Paket','Daftar','Berakhir','Status','Aksi'],l.map(function(m){var p=db.get('packages',m.packageId);return'<tr><td>'+m.id+(m.demo?' <span class="bd y">DEMO</span>':'')+'</td><td>'+E(m.name)+'</td><td>'+E(m.phone)+'</td><td>'+E(m.email)+'</td><td>'+(p?E(p.name):'—')+'</td><td>'+FF.tgl(m.createdAt)+'</td><td>'+FF.tgl(m.end)+'</td><td>'+FF.badge(db.status(m))+'</td><td><button class="btn s" data-a="edit" data-id="'+m.id+'">Detail/Edit</button> <button class="btn s" data-a="ext" data-id="'+m.id+'">Perpanjang</button> <button class="btn s" data-a="tog" data-id="'+m.id+'">'+(m.status==='nonaktif'?'Aktifkan':'Nonaktifkan')+'</button> <button class="btn s" data-a="del" data-id="'+m.id+'">Hapus</button></td></tr>'}))}
+function members(){return'<div class="row2"><input id="q" placeholder="Cari ID, nama, HP, email" value="'+E(q)+'"><button class="btn s" data-a="csvm">Ekspor CSV</button></div><div id="list">'+mlist()+'</div>'}
+function plist(){var l=db.list('transactions').filter(function(t){return!q||has(t,q)}).reverse();
+return tbl(['No','Member','Paket','Nominal','Tanggal','Metode','Status','Catatan','Aksi'],l.map(function(t){return'<tr><td>'+E(t.no)+'</td><td>'+E(t.memberId+' '+t.memberName)+'</td><td>'+E(t.packageName)+'</td><td>'+FF.rp(t.amount)+'</td><td>'+FF.tgl(t.date)+'</td><td>'+E(t.method)+'</td><td>'+FF.badge(t.status)+'</td><td>'+E(t.note)+'</td><td>'+(t.status==='menunggu'?'<button class="btn s p" data-a="ok" data-id="'+t.id+'">Setujui</button> <button class="btn s" data-a="no" data-id="'+t.id+'">Tolak</button>':'')+'</td></tr>'}))}
+function payments(){return'<div class="row2"><input id="q" placeholder="Cari transaksi" value="'+E(q)+'"><button class="btn s" data-a="csvt">Ekspor CSV</button></div><p class="mut">Pendapatan hanya dihitung dari transaksi berstatus disetujui.</p><div id="list">'+plist()+'</div>'}
+function packages(){return'<p class="mut">Ubah lalu klik Simpan. Perubahan langsung tampil di website publik (browser yang sama).</p><button class="btn s p" data-a="newp">Tambah paket</button>'+tbl(['Nama','Harga (kosong = belum dikonfirmasi)','Bulan','Bonus','Promo s.d.','Catatan','Aktif','Populer',''],db.list('packages').map(function(p){return'<tr data-pid="'+p.id+'"><td><input data-f="name" value="'+E(p.name)+'"></td><td><input data-f="price" type="number" min="0" value="'+(p.price==null?'':p.price)+'"></td><td><input data-f="months" type="number" min="0" value="'+p.months+'"></td><td><input data-f="bonus" type="number" min="0" value="'+p.bonus+'"></td><td><input data-f="promoEnd" type="date" value="'+(p.promoEnd||'')+'"></td><td><input data-f="note" value="'+E(p.note)+'"></td><td><input data-f="active" type="checkbox"'+(p.active?' checked':'')+'></td><td><input data-f="popular" type="checkbox"'+(p.popular?' checked':'')+'></td><td><button class="btn s p" data-a="savep" data-id="'+p.id+'">Simpan</button></td></tr>'}))}
+function vlist(){return tbl(['Waktu','ID','Nama'],db.list('visits').filter(function(v){return!q||v.at.slice(0,10)===q}).reverse().map(function(v){return'<tr><td>'+FF.jam(v.at)+'</td><td>'+v.memberId+'</td><td>'+E(v.name)+'</td></tr>'}))}
+function visits(){var res=cq?mem().filter(function(m){return has([m.id,m.name],cq)}).slice(0,5):[];
+return'<div class="card"><div class="row2"><input id="cq" placeholder="ID member atau nama" value="'+E(cq)+'"></div>'+res.map(function(m){return'<div class="row2"><span>'+m.id+' — '+E(m.name)+' '+FF.badge(db.status(m))+'</span><button class="btn s p" data-a="ci" data-id="'+m.id+'">Check-in</button></div>'}).join('')+'</div><br><div class="row2"><label>Filter tanggal <input id="vq" type="date" value="'+E(q)+'"></label></div><div id="list">'+vlist()+'</div>'}
+function rep(){var r=range(per),tx=db.list('transactions').filter(function(t){return t.date>=r[0]&&t.date<=r[1]}),ok=tx.filter(function(t){return t.status==='disetujui'}),vs=db.list('visits').filter(function(v){var x=v.at.slice(0,10);return x>=r[0]&&x<=r[1]}),ms=mem(),by={};
+ok.forEach(function(t){var b=by[t.packageName]=by[t.packageName]||{n:0,s:0};b.n++;b.s+=t.amount});
+return{rows:[['Total member',ms.length],['Member aktif',ms.filter(function(m){return db.status(m)==='aktif'}).length],['Member baru',ms.filter(function(m){var x=m.createdAt.slice(0,10);return x>=r[0]&&x<=r[1]}).length],['Member kedaluwarsa',ms.filter(function(m){return db.status(m)==='kedaluwarsa'}).length],['Total transaksi',tx.length],['Pendapatan terkonfirmasi',ok.reduce(function(a,t){return a+t.amount},0)],['Transaksi pending',tx.filter(function(t){return t.status==='menunggu'}).length],['Kunjungan',vs.length]],by:by}}
+var PL={today:'Hari ini','7d':'7 hari terakhir',month:'Bulan ini',year:'Tahun ini',all:'Semua data'};
+function rdata(){var r=range(per),R=rep(),tx=db.list('transactions').filter(function(t){return t.date>=r[0]&&t.date<=r[1]}),vs=db.list('visits').filter(function(v){var x=v.at.slice(0,10);return x>=r[0]&&x<=r[1]}),by=Object.keys(R.by).map(function(k){return[k,R.by[k].n,R.by[k].s]});
+return{per:PL[per],range:per==='all'?'seluruh data':FF.tgl(r[0])+' - '+FF.tgl(r[1]),now:FF.jam(new Date().toISOString()),file:'laporan-fun-fitness-'+per+'-'+db.today(),
+kpi:R.rows.map(function(x){return[x[0],x[1],x[0].indexOf('Pendapatan')===0?1:0]}),by:by,
+tx:tx.map(function(t){return[t.no,FF.tgl(t.date),t.memberId,t.memberName,t.packageName,t.amount,t.status,t.note]}),
+members:mem().map(function(m){var p=db.get('packages',m.packageId);return[m.id,m.name,m.phone,m.email,p?p.name:'-',FF.tgl(m.end),db.status(m)]}),
+visits:vs.map(function(v){return[FF.jam(v.at),v.memberId,v.name]})}}
+function reports(){var R=rep(),o=[['today','Hari ini'],['7d','7 hari'],['month','Bulan ini'],['year','Tahun ini'],['all','Semua']];
+return'<div class="row2"><select id="per">'+o.map(function(x){return'<option value="'+x[0]+'"'+(x[0]===per?' selected':'')+'>'+x[1]+'</option>'}).join('')+'</select><button class="btn s p" data-a="pdf">Unduh PDF</button><button class="btn s p" data-a="xlsx">Unduh Excel</button><button class="btn s" data-a="csvr">Ekspor CSV</button><button class="btn s" data-a="prt">Cetak</button></div>'+tbl(['Rekap','Nilai'],R.rows.map(function(r){return'<tr><td>'+r[0]+'</td><td>'+(r[0].indexOf('Pendapatan')===0?FF.rp(r[1]):r[1])+'</td></tr>'}))+'<h3>Penjualan per paket (disetujui)</h3>'+tbl(['Paket','Jumlah','Total'],Object.keys(R.by).map(function(k){return'<tr><td>'+E(k)+'</td><td>'+R.by[k].n+'</td><td>'+FF.rp(R.by[k].s)+'</td></tr>'}))}
+function settings(){var s=db.settings(),f=[['name','Nama bisnis'],['address','Alamat'],['hours','Jam operasional'],['phone1','Kontak 1'],['phone2','Kontak 2'],['ig','Instagram'],['maps','Google Maps'],['mgm','Info Member Get Member'],['mgmStatus','Status Member Get Member']];
+return'<div class="card" style="max-width:560px">'+f.map(function(x){return'<div class="field"><label>'+x[1]+'</label><input data-s="'+x[0]+'" value="'+E(s[x[0]])+'"></div>'}).join('')+'<button class="btn p" data-a="sets">Simpan</button> <button class="btn" data-a="cancel">Batalkan</button></div><br><div class="card"><b>Reset data demo</b><p class="mut">Menghapus SEMUA data di browser ini dan mengembalikan data demo.</p><button class="btn" data-a="reset">Reset data</button></div>'}
+function logs(){return'<p class="mut">Log berbasis localStorage dapat diubah pengguna; bukan bukti audit yang aman untuk produksi.</p>'+tbl(['Waktu','Aktivitas','Detail','Pengguna'],db.list('logs').slice().reverse().map(function(l){return'<tr><td>'+FF.jam(l.at)+'</td><td>'+E(l.type)+'</td><td>'+E(l.detail)+'</td><td>'+E(l.user)+'</td></tr>'}))}
+function months(n){var r=[],x=new Date(),i,y;for(i=n-1;i>=0;i--){y=new Date(x.getFullYear(),x.getMonth()-i,1);r.push(y.getFullYear()+'-'+('0'+(y.getMonth()+1)).slice(-2))}return r}
+function chart(t,rows,f){var mx=Math.max.apply(null,rows.map(function(r){return r.v}));return'<div class="card"><h3>'+t+'</h3>'+(mx?'<div class="ch">'+rows.map(function(r){return'<div class="cb"><span>'+f(r.v)+'</span><i style="height:'+(r.v/mx*80)+'%"></i><span>'+r.l+'</span></div>'}).join('')+'</div>':'<p class="mut">Belum ada data.</p>')+'</div>'}
+function charts(){var M=months(6),tx=db.list('transactions'),st=['menunggu','disetujui','ditolak','dibatalkan'];return'<br><div class="grid">'+chart('Pertumbuhan member (baru per bulan)',M.map(function(k){return{l:k.slice(5),v:mem().filter(function(m){return m.createdAt.slice(0,7)===k}).length}}),String)+chart('Pendapatan terkonfirmasi (rb)',M.map(function(k){return{l:k.slice(5),v:tx.filter(function(t){return t.status==='disetujui'&&t.date.slice(0,7)===k}).reduce(function(a,t){return a+t.amount},0)}}),function(v){return Math.round(v/1000)})+chart('Transaksi per status',st.map(function(s){return{l:s,v:tx.filter(function(t){return t.status===s}).length}}),String)+'</div>'}
+function remind(){var l=mem().filter(function(m){return db.status(m)==='akan berakhir'}),tx=db.list('transactions').filter(function(t){return t.status==='menunggu'});return'<br><div class="grid"><div class="card"><h3>Pengingat: akan berakhir</h3>'+(l.length?l.map(function(m){var w=FF.wa(m.phone);return'<div class="row2"><span>'+E(m.name)+' — '+FF.tgl(m.end)+'</span>'+(w?'<a class="btn s" target="_blank" rel="noopener" href="'+w+'?text='+encodeURIComponent('Halo '+m.name+', membership FUN FITNESS kamu berakhir '+FF.tgl(m.end)+'.')+'">WhatsApp</a>':'')+'</div>'}).join(''):'<p class="mut">Tidak ada.</p>')+'</div><div class="card"><h3>Ringkasan pembayaran</h3><p>Menunggu konfirmasi: <b>'+tx.length+'</b> transaksi ('+FF.rp(tx.reduce(function(a,t){return a+t.amount},0))+')</p><button class="btn s p" data-a="gopay">Buka pembayaran</button></div></div>'}
+var V={overview:overview,members:members,payments:payments,packages:packages,visits:visits,reports:reports,settings:settings,logs:logs};
+function go(v){view=v;q='';cq='';draw()}
+function cu(){if(window.matchMedia&&matchMedia('(prefers-reduced-motion:reduce)').matches)return;[].forEach.call(main.querySelectorAll('.stat b'),function(e){var n=+e.textContent;if(!(n>0)||e.textContent!==String(n))return;var t0=Date.now();(function f(){var p=Math.min(1,(Date.now()-t0)/700);e.textContent=Math.round(n*p);if(p<1)setTimeout(f,30)})()})}
+function draw(){d.getElementById('crumb').textContent='Admin / '+T[view];d.querySelectorAll('[data-v]').forEach(function(b){b.className=b.getAttribute('data-v')===view?'on':''});main.innerHTML=V[view]();FF.labelTables(main);if(view==='overview')cu();d.body.classList.remove('side-open')}
+V.overview=function(){return overview()+remind()+charts()};FF.refresh=draw;draw();
+d.querySelectorAll('[data-v]').forEach(function(b){b.addEventListener('click',function(){go(b.getAttribute('data-v'))})});
+d.getElementById('out').onclick=FF.auth.logout;d.getElementById('sb').onclick=function(){d.body.classList.toggle('side-open')};
+d.addEventListener('input',function(e){var i=e.target.id;
+if(i==='q'){q=e.target.value;d.getElementById('list').innerHTML=view==='members'?mlist():plist();FF.labelTables(main)}
+if(i==='vq'){q=e.target.value;d.getElementById('list').innerHTML=vlist();FF.labelTables(main)}
+if(i==='cq'){cq=e.target.value;var p=e.target.selectionStart;draw();var n=d.getElementById('cq');n.focus();n.setSelectionRange(p,p)}});
+d.addEventListener('change',function(e){if(e.target.id==='per'){per=e.target.value;draw()}});
+d.addEventListener('click',function(e){var b=e.target,a=b.getAttribute&&b.getAttribute('data-a');if(d.body.classList.contains('side-open')&&b.id!=='sb'&&!(b.closest&&b.closest('.side')))d.body.classList.remove('side-open');if(!a)return;var id=b.getAttribute('data-id');
+if(a==='ext')FF.dlg('Perpanjang membership','<div class="field"><label>Jumlah bulan</label><input name="n" type="number" min="1" max="36" value="1" required></div>','Perpanjang',function(v){var n=parseInt(v.n,10);if(!(n>0&&n<=36)){FF.toast('Isi 1–36 bulan','err');return false}var m=db.get('members',id),base=(m.end&&m.end>db.today())?m.end:db.today();db.upd('members',id,{start:m.start||db.today(),end:db.addMonths(base,n)});db.log('Perpanjangan membership',id+' +'+n+' bln');draw()});
+if(a==='gopay')go('payments');
+if(a==='edit'){var m4=db.get('members',id),pkh=db.list('packages').map(function(p){return'<option value="'+p.id+'"'+(p.id===m4.packageId?' selected':'')+'>'+E(p.name)+'</option>'}).join('');FF.dlg('Member '+id,'<div class="field"><label>Nama</label><input name="name" value="'+E(m4.name)+'"></div><div class="field"><label>Email</label><input name="email" value="'+E(m4.email)+'"></div><div class="field"><label>Nomor HP</label><input name="phone" value="'+E(m4.phone)+'"></div><div class="field"><label>Paket</label><select name="pk"><option value="">—</option>'+pkh+'</select></div><p class="mut">Daftar: '+FF.tgl(m4.createdAt)+' • Berakhir: '+FF.tgl(m4.end)+'</p>','Simpan',function(v){if(v.name.trim().length<3||!FF.wa(v.phone)||!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v.email)){FF.toast('Nama, email, atau HP tidak valid','err');return false}db.upd('members',id,{name:v.name.trim(),email:v.email,phone:v.phone,packageId:v.pk||null});db.log('Edit member',id);draw()})}
+if(a==='tog'){var m2=db.get('members',id);db.upd('members',id,{status:m2.status==='nonaktif'?'ok':'nonaktif'});db.log('Ubah status akun',id);draw()}
+if(a==='del')FF.dlg('Hapus member','<p>Hapus member <b>'+id+'</b> beserta akunnya? Tindakan ini tidak dapat dibatalkan.</p>','Hapus',function(){db.del('members',id);db.log('Hapus member',id);draw()});
+if(a==='ok')FF.dlg('Setujui pembayaran','<p>Setujui transaksi ini? Masa aktif member akan diperbarui.</p>','Setujui',function(){if(db.setTx(id,'disetujui'))FF.toast('Pembayaran disetujui, masa aktif diperbarui');draw()});
+if(a==='no')FF.dlg('Tolak pembayaran','<div class="field"><label>Alasan penolakan</label><textarea name="r" required></textarea></div>','Tolak',function(v){if(!v.r.trim()){FF.toast('Isi alasan','err');return false}db.setTx(id,'ditolak',v.r.trim());draw()});
+if(a==='newp'){db.add('packages',{name:'Paket baru',type:'member',price:null,months:1,bonus:0,active:false,popular:false,promoEnd:'',note:''});db.log('Perubahan paket','paket baru');draw()}
+if(a==='savep'){var row=b.closest('tr'),g=function(f){return row.querySelector('[data-f="'+f+'"]')},pr=g('price').value;
+ if(!g('name').value.trim())return FF.toast('Nama paket wajib diisi','err');
+ db.upd('packages',id,{name:g('name').value.trim(),price:pr===''?null:+pr,months:+g('months').value||0,bonus:+g('bonus').value||0,promoEnd:g('promoEnd').value,note:g('note').value,active:g('active').checked,popular:g('popular').checked});db.log('Perubahan paket',id);FF.toast('Paket disimpan')}
+if(a==='ci'){var m3=db.get('members',id),st=db.status(m3);
+ if(st==='kedaluwarsa'||st==='menunggu'||st==='nonaktif'){if(!confirm('Status member: '+st+'. Tetap check-in?'))return}
+ var last=db.list('visits').filter(function(v){return v.memberId===id}).pop();if(last&&Date.now()-new Date(last.at)<36e5&&!confirm('Member sudah check-in kurang dari 1 jam lalu. Catat lagi?'))return;
+ db.add('visits',{memberId:id,name:m3.name,at:new Date().toISOString()});db.log('Check-in',id);FF.toast('Check-in dicatat');cq='';draw()}
+if(a==='csvm')FF.csv('member.csv',[['ID','Nama','HP','Email','Berakhir','Status']].concat(mem().map(function(m){return[m.id,m.name,m.phone,m.email,m.end,db.status(m)]})));
+if(a==='csvt')FF.csv('transaksi.csv',[['No','ID Member','Nama','Paket','Nominal','Tanggal','Status','Catatan']].concat(db.list('transactions').map(function(t){return[t.no,t.memberId,t.memberName,t.packageName,t.amount,t.date,t.status,t.note]})));
+if(a==='csvr')FF.csv('laporan.csv',[['Rekap','Nilai']].concat(rep().rows));
+if(a==='pdf'||a==='xlsx'){try{FF.exp[a](rdata());FF.toast('Laporan '+a.toUpperCase()+' diunduh')}catch(x){FF.toast('Gagal membuat laporan: '+x.message,'err')}}
+if(a==="prt")window.print();
+if(a==='sets'){var s=db.settings();d.querySelectorAll('[data-s]').forEach(function(i){s[i.getAttribute('data-s')]=i.value.trim()});if(!s.name||!s.address)return FF.toast('Nama dan alamat wajib diisi','err');if(db.saveSettings(s)){db.log('Perubahan pengaturan');FF.toast('Pengaturan disimpan')}}
+if(a==='cancel')draw();
+if(a==='reset')FF.dlg('Reset data demo','<p>Menghapus SEMUA data di browser ini. Ketik RESET untuk lanjut.</p><input name="k" required>','Reset',function(v){if(v.k!=='RESET'){FF.toast('Ketik RESET','err');return false}db.reset();location.href='login.html'})});
+});
+})(document);
