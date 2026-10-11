@@ -136,3 +136,26 @@ html, body { overflow-x: clip; }
   #talentGrid .tc-header > span { display: none; }
   #talentGrid .tc-header strong { min-width: 0; overflow-wrap: anywhere; }
 }
+
+/* ---------- 11. Editor talent (admin): rapi di HP & PC ---------- */
+/* kotak centang tidak boleh ikut aturan "input 100%" milik kolom isian */
+.nb-chk input[type="checkbox"], .nb-f .nb-chk input { width: 18px; height: 18px; flex: 0 0 auto; padding: 0; margin: 0; border: 0; accent-color: var(--pink-deep); cursor: pointer; }
+.nb-chks { display: grid; grid-template-columns: repeat(auto-fill, minmax(136px, 1fr)); gap: .5rem; }
+.nb-chks .nb-chk { display: flex; align-items: center; gap: .5rem; white-space: nowrap; border-radius: 12px; padding: .55rem .8rem; min-height: 42px; }
+.nb-chk:has(input:checked) { border-color: var(--pink-deep); background: var(--pink-light); }
+
+/* informasi: 6 kolom di PC (3+3 / 2+2+2), 2 kolom di HP */
+.nb-grid.nb-grid6 { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: .75rem .8rem; }
+.nb-grid6 .nb-f { margin-bottom: 0; min-width: 0; }
+.nb-grid6 .nb-f.s2 { grid-column: span 2; }
+.nb-grid6 .nb-f.s3 { grid-column: span 3; }
+@media (max-width: 620px) {
+  .nb-grid6 .nb-f.s2, .nb-grid6 .nb-f.s3 { grid-column: span 3; }
+  .nb-grid6 .nb-f.s3:nth-child(-n+2) { grid-column: 1 / -1; }   /* nama lengkap & panggilan selebar layar */
+  .nb-grid6 .k-kota { order: 5; }   /* HP: tinggi|berat berdampingan, kota turun setelah rating */
+  .nb-grid6 .k-last { order: 6; }
+}
+
+/* tombol Simpan/Batal selalu terlihat saat modal panjang di-scroll */
+.nb-box.wide .nb-btns { position: sticky; bottom: -1.5rem; margin: 1rem -1.5rem -1.5rem; padding: .85rem 1.5rem; background: var(--bg-card); border-top: 1px solid var(--border); border-radius: 0 0 24px 24px; z-index: 2; }
+@media (max-width: 520px) { .nb-box.wide .nb-btns .nb-btn { flex: 1; justify-content: center; } }

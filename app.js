@@ -1040,6 +1040,8 @@ function openTalentDetail(id) {
           <span><i class="fas fa-map-marker-alt"></i> ${t.location}</span>
           <span><i class="fas fa-birthday-cake"></i> ${t.age} tahun</span>
           <span><i class="fas fa-venus-mars"></i> ${t.gender}</span>
+          ${t.height>0?`<span><i class="fas fa-ruler-vertical"></i> ${t.height} cm</span>`:''}
+          ${t.weight>0?`<span><i class="fas fa-weight-scale"></i> ${t.weight} kg</span>`:''}
         </div>
         <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.25rem">
           <div><span style="font-size:1.5rem;font-weight:700;color:var(--pink-deep)">⭐ ${t.rating}</span></div>
@@ -1048,7 +1050,7 @@ function openTalentDetail(id) {
         </div>
         <p style="color:var(--text-sec);line-height:1.75;margin-bottom:1.25rem">${t.bio}</p>
         <div style="display:flex;flex-direction:column;gap:.65rem;margin-bottom:1.25rem">
-          <div><strong style="font-size:.82rem;color:var(--text-muted)">HOBI</strong><div style="margin-top:.3rem;font-size:.88rem">${t.hobbies}</div></div>
+          ${(t.hobbies && t.hobbies!=='Belum diisi')?`<div><strong style="font-size:.82rem;color:var(--text-muted)">HOBI</strong><div style="margin-top:.3rem;font-size:.88rem">${t.hobbies}</div></div>`:''}
           <div><strong style="font-size:.82rem;color:var(--text-muted)">LAYANAN</strong><div style="display:flex;flex-wrap:wrap;gap:.3rem;margin-top:.3rem">${(t.services||[]).map(s=>`<span class="tc-services"><span>${s}</span></span>`).join('')}</div></div>
           <div><strong style="font-size:.82rem;color:var(--text-muted)">JADWAL AKTIF</strong><div style="display:flex;flex-wrap:wrap;gap:.3rem;margin-top:.3rem">${(t.schedule||[]).map(s=>`<span style="padding:.2rem .6rem;background:var(--purple-light);border-radius:50px;font-size:.78rem">${s}</span>`).join('')}</div></div>
         </div>
