@@ -666,13 +666,9 @@ function submitMessage() {
   // 1) selalu masuk ke kotak pesan dasbor admin
   sendInboxMessage({ name, contact, message: text, talentId: ctx.talentId, talentName: ctx.talentName, source: ctx.talentName ? 'Chat Talent' : 'Chat Admin' });
   closeModal('messageModal');
-  // 2) pesan untuk Admin juga dibuka di WhatsApp admin (pengguna tinggal menekan kirim)
-  if (!ctx.talentId) {
-    openWhatsApp('Halo Admin Nabillove 👋\n\nNama: ' + name + '\nKontak: ' + contact + '\n\nPesan:\n' + text + '\n\n(Dikirim dari website Nabillove)');
-    toast('Pesan masuk ke admin ✓ Lanjutkan kirim di WhatsApp','success');
-  } else {
-    toast('Pesan terkirim! Admin akan segera membalas 💌','success');
-  }
+  // 2) semua pesan juga dibuka di WhatsApp admin (pengguna tinggal menekan kirim)
+  openWhatsApp('Halo Admin Nabillove 👋\n\nNama: ' + name + '\nKontak: ' + contact + (ctx.talentName ? '\nUntuk talent: ' + ctx.talentName : '') + '\n\nPesan:\n' + text + '\n\n(Dikirim dari website Nabillove)');
+  toast('Pesan masuk ke admin ✓ Lanjutkan kirim di WhatsApp','success');
   document.getElementById('msgName').value = '';
   document.getElementById('msgContact').value = '';
   document.getElementById('msgText').value = '';
@@ -702,12 +698,12 @@ function renderAdminInbox(el) {
   const msgs = getInboxFor('admin');
   el.innerHTML = `
     <h2 style="font-family:var(--font-display);font-size:1.4rem;margin-bottom:.35rem"><i class="fas fa-envelope" style="color:var(--pink-deep)"></i> Pesan Masuk</h2>
-    <p style="color:var(--text-muted);font-size:.83rem;margin-bottom:1.5rem">Semua pesan dari pengunjung situs — tidak ada yang diarahkan ke WhatsApp lagi.</p>
+    <p style="color:var(--text-muted);font-size:.83rem;margin-bottom:1.5rem">Semua pesan dan pesanan dari pengunjung masuk ke sini, dan juga dikirim ke WhatsApp admin.</p>
     ${msgs.length ? `<div class="inbox-list">${msgs.map(m => `
       <div class="inbox-item ${m.read?'':'unread'}" onclick="markInboxRead('admin','${m._id}');this.classList.remove('unread')">
         <div class="inbox-item-top">
           <strong>${m.name}</strong>
-          ${m.talentName ? `<span class="inbox-tag">untuk ${m.talentName}</span>` : ''}
+          ${m.source ? `<span class="inbox-tag">${m.source}</span>` : ''}${m.talentName ? `<span class="inbox-tag">untuk ${m.talentName}</span>` : ''}
           <span class="inbox-time">${new Date(m.time).toLocaleString('id-ID',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</span>
         </div>
         <p class="inbox-item-msg">${m.message}</p>
@@ -1155,58 +1151,84 @@ function bkVariants(key){
 function bkActivePackages(){
   try { return (window.nbPackages ? window.nbPackages.get() : []).filter(p => p.active && bkNum(p.price) > 0); } catch(e){ return []; }
 }
-function bkPackageOptions(){
-  return bkActivePackages().map(p => ({ value: 'pkg:' + p.id, label: '📦 ' + bkEsc(p.label) + ' · Rp ' + bkEsc(bkRp(bkNum(p.price))) }));
+
+/* ---- pilih BANYAK layanan: bookingData.picks = [{type:'svc'|'pkg', name, key, pkg, variant, addonQty, v}] ---- */
+function bkPicks(){ return bookingData.picks || (bookingData.picks = []); }
+
+function bkSvcListHTML(talent){
+  const svcs = talent.services || [], pk = bkActivePackages();
+  bookingData._svcNames = svcs; bookingData._pkgs = pk;
+  const row = (kind, i, title, sub) => `<button type="button" class="bk-svc-row" data-k="${kind}${i}" onclick="bkToggle('${kind}',${i})" aria-pressed="false">
+      <span class="bk-svc-check"><i class="fas fa-check"></i></span><span class="bk-svc-name">${title}</span>${sub ? `<span class="bk-svc-sub">${sub}</span>` : ''}</button>`;
+  return `<div class="bk-svc-list">${svcs.map((s,i) => row('s', i, bkEsc(s), '')).join('')}
+    ${pk.length ? `<div class="bk-svc-group">📦 Paket & Promo</div>${pk.map((p,i) => row('p', i, bkEsc(p.label), 'Rp ' + bkEsc(bkRp(bkNum(p.price))))).join('')}` : ''}</div>`;
 }
-function bkRenderPackage(box, p){
-  bookingData.pkg = p; bookingData.variant = { label: p.label, price: p.price };
-  bookingData._v = { main: [], addon: null }; bookingData._key = 'paket';
-  box.innerHTML = `<div class="bk-combo" style="margin-top:1rem"><strong>📦 ${bkEsc(p.label)}</strong>
-    <ul>${p.perks.map(x => `<li><span>${bkEsc(x)}</span></li>`).join('')}</ul>
-    <div class="bk-combo-total">Total <b>Rp ${bkRp(bkNum(p.price))}</b></div></div>`;
+
+function bkToggle(kind, i){
+  const picks = bkPicks();
+  const id = kind + i;
+  const at = picks.findIndex(p => p.id === id);
+  if (at >= 0) picks.splice(at, 1);
+  else if (kind === 's') {
+    const name = (bookingData._svcNames || [])[i]; if (name == null) return;
+    const key = bkSvcKey(name), v = key ? bkVariants(key) : { main: [], addon: null };
+    picks.push({ id, type: 'svc', name, key, v, variant: null, addonQty: 0 });
+  } else {
+    const p = (bookingData._pkgs || [])[i]; if (!p) return;
+    picks.push({ id, type: 'pkg', name: p.label, pkg: p, variant: { label: p.label, price: p.price }, addonQty: 0, v: { main: [], addon: null } });
+  }
+  bkRenderVariants();
 }
 
 function bkRenderVariants(){
   const box = document.getElementById('bkVariantBox'); if (!box) return;
-  const svcEl = document.getElementById('bkService');
-  bookingData.variant = null; bookingData.addonQty = 0; bookingData.pkg = null;
-  const val = svcEl ? svcEl.value : '';
-  if (val.indexOf('pkg:') === 0) {
-    const p = bkActivePackages().find(x => 'pkg:' + x.id === val);
-    if (p) { bkRenderPackage(box, p); return; }
-  }
-  const key = bkSvcKey(val);
-  const v = key ? bkVariants(key) : { main: [], addon: null };
-  bookingData._v = v; bookingData._key = key;
-  if (!v.main.length) { box.innerHTML = ''; return; }
-  box.innerHTML = `<div class="bk-ask">
-    <label class="bk-q">${bkEsc(BK_QUESTION[key])} <span class="bk-req">*</span></label>
-    <div class="bk-chips">${v.main.map((it,i) => `<button type="button" class="bk-chip${it.popular?' pop':''}" onclick="bkPickVariant(${i})" aria-pressed="false">
-        ${it.popular?'<em>🔥 Terpopuler</em>':''}<strong>${bkEsc(it.label)}</strong><span>Rp ${bkEsc(it.price)}</span></button>`).join('')}</div>
-    ${v.addon ? `<div class="bk-addon"><div><strong>Tambahan jam</strong><small>Rp ${bkEsc(v.addon.price)} / jam (opsional)</small></div>
-        <div class="bk-step"><button type="button" aria-label="Kurangi" onclick="bkAddon(-1)">−</button><b id="bkAddonQty">0</b><button type="button" aria-label="Tambah" onclick="bkAddon(1)">+</button></div></div>` : ''}
-    <div class="bk-total" id="bkTotal"></div></div>`;
+  const picks = bkPicks();
+  document.querySelectorAll('.bk-svc-row').forEach(r => { const on = picks.some(p => p.id === r.dataset.k); r.classList.toggle('on', on); r.setAttribute('aria-pressed', on ? 'true' : 'false'); });
+  if (!picks.length) { box.innerHTML = '<div class="bk-total" id="bkTotal"><span>Pilih satu atau lebih layanan di atas</span></div>'; return; }
+  box.innerHTML = picks.map((p, pi) => {
+    if (p.type === 'pkg') {
+      return `<div class="bk-combo" style="margin-top:1rem"><strong>📦 ${bkEsc(p.pkg.label)}</strong>
+        <ul>${p.pkg.perks.map(x => `<li><span>${bkEsc(x)}</span></li>`).join('')}</ul>
+        <div class="bk-combo-total">Harga <b>Rp ${bkRp(bkNum(p.pkg.price))}</b></div></div>`;
+    }
+    const v = p.v;
+    if (!v.main.length) return '';
+    return `<div class="bk-ask">
+      <label class="bk-q">${bkEsc(p.name)} — ${bkEsc(BK_QUESTION[p.key])} <span class="bk-req">*</span></label>
+      <div class="bk-chips">${v.main.map((it,j) => `<button type="button" class="bk-chip${it.popular?' pop':''}${p.variant === it ? ' on' : ''}" onclick="bkPickVariant(${pi},${j})" aria-pressed="${p.variant === it}">
+          ${it.popular?'<em>🔥 Terpopuler</em>':''}<strong>${bkEsc(it.label)}</strong><span>Rp ${bkEsc(it.price)}</span></button>`).join('')}</div>
+      ${v.addon ? `<div class="bk-addon"><div><strong>Tambahan jam</strong><small>Rp ${bkEsc(v.addon.price)} / jam (opsional)</small></div>
+          <div class="bk-step"><button type="button" aria-label="Kurangi" onclick="bkAddon(${pi},-1)">−</button><b>${p.addonQty||0}</b><button type="button" aria-label="Tambah" onclick="bkAddon(${pi},1)">+</button></div></div>` : ''}
+    </div>`;
+  }).join('') + '<div class="bk-total" id="bkTotal"></div>';
   bkUpdateTotal();
 }
-function bkPickVariant(i){
-  const v = bookingData._v; if (!v || !v.main[i]) return;
-  bookingData.variant = v.main[i];
-  document.querySelectorAll('#bkVariantBox .bk-chip').forEach((c,j) => { c.classList.toggle('on', j===i); c.setAttribute('aria-pressed', j===i ? 'true' : 'false'); });
-  bkUpdateTotal();
+function bkPickVariant(pi, j){
+  const p = bkPicks()[pi]; if (!p || !p.v.main[j]) return;
+  p.variant = p.v.main[j];
+  bkRenderVariants();
 }
-function bkAddon(d){
-  const v = bookingData._v; if (!v || !v.addon) return;
-  bookingData.addonQty = Math.max(0, Math.min(6, (bookingData.addonQty||0) + d));
-  const q = document.getElementById('bkAddonQty'); if (q) q.textContent = bookingData.addonQty;
-  bkUpdateTotal();
+function bkAddon(pi, d){
+  const p = bkPicks()[pi]; if (!p || !p.v.addon) return;
+  p.addonQty = Math.max(0, Math.min(6, (p.addonQty||0) + d));
+  bkRenderVariants();
 }
-/* hasil pilihan layanan (talent) -> {label,total} */
+/* hasil semua pilihan (talent) -> {label,total} */
 function bkCalc(){
-  const v = bookingData.variant; if (!v) return null;
-  let total = bkNum(v.price), label = v.label;
-  const v2 = bookingData._v;
-  if ((bookingData.addonQty||0) > 0 && v2 && v2.addon) { total += bkNum(v2.addon.price) * bookingData.addonQty; label += ' + ' + bookingData.addonQty + ' Jam tambahan'; }
-  return { label, total };
+  const picks = bkPicks(); if (!picks.length) return null;
+  let total = 0; const parts = [];
+  for (const p of picks) {
+    if (p.type === 'pkg') { total += bkNum(p.pkg.price); parts.push('Paket ' + p.pkg.label + ' (' + p.pkg.perks.join(', ') + ')'); continue; }
+    if (p.v.main.length) {
+      if (!p.variant) continue;
+      let sub = bkNum(p.variant.price), lab = p.variant.label.toLowerCase().includes(p.name.toLowerCase()) ? p.variant.label : p.name + ' ' + p.variant.label;
+      if ((p.addonQty||0) > 0 && p.v.addon) { sub += bkNum(p.v.addon.price) * p.addonQty; lab += ' + ' + p.addonQty + ' Jam tambahan'; }
+      total += sub; parts.push(lab);
+    } else {                                   // layanan tanpa daftar harga -> harga dasar talent
+      total += bkNum(bookingData.talent && bookingData.talent.price); parts.push(p.name);
+    }
+  }
+  return parts.length ? { label: parts.join(' + '), total } : null;
 }
 function bkUpdateTotal(){
   const el = document.getElementById('bkTotal'); if (!el) return;
@@ -1258,8 +1280,8 @@ function buildBookingModal() {
       </div>
       <div><strong>${talent.name}</strong><div style="font-size:.78rem;color:var(--text-muted)">${talent.location} · ⭐ ${talent.rating}</div></div>
     </div>
-    <div class="form-group"><label>Pilih Layanan</label>
-      ${customSelectHTML('bkService', [...(talent.services||[]).map(s=>({value:s,label:s})), ...bkPackageOptions()], 'bkRenderVariants')}
+    <div class="form-group"><label>Pilih Layanan <small style="font-weight:500;color:var(--text-muted)">(boleh lebih dari satu)</small></label>
+      ${bkSvcListHTML(talent)}
     </div>
     <div id="bkVariantBox"></div>`
   : `${combo ? bkComboHTML(combo) : `<div style="padding:.85rem;background:var(--purple-light);border-radius:var(--radius-sm);margin-bottom:1.25rem">
@@ -1307,15 +1329,12 @@ function buildBookingModal() {
 /* kumpulkan pilihan pemesan menjadi satu objek */
 function bkCollect(){
   const {talent, serviceName, servicePrice, combo} = bookingData;
-  const serviceEl = document.getElementById('bkService');
   const talentEl  = document.getElementById('bkTalent');
   let service, total;
   if (talent) {
-    const base = serviceEl ? serviceEl.value : 'Chatting';
     const c = bkCalc();
-    if (bookingData.pkg && c) { service = 'Paket ' + bookingData.pkg.label + ' (' + bookingData.pkg.perks.join(', ') + ')'; total = bkRp(c.total); }
-    else if (c) { service = c.label.toLowerCase().includes(base.toLowerCase()) ? c.label : base + ' ' + c.label; total = bkRp(c.total); }
-    else   { service = base; total = talent.price || '0'; }
+    if (c) { service = c.label; total = bkRp(c.total); }
+    else   { service = 'Chatting'; total = talent.price || '0'; }
   } else { service = serviceName; total = servicePrice || '0'; }
   let talentName = 'Ditentukan Admin';
   if (talent) talentName = talent.name;
@@ -1341,8 +1360,10 @@ function bkFillSummary(){
 
 function bkNext(step) {
   if (step===1 && bookingData.talent) {
-    const v = bookingData._v;
-    if (v && v.main && v.main.length && !bookingData.variant) { toast('Jawab dulu: ' + (BK_QUESTION[bookingData._key]||'pilih durasi'),'error'); return; }
+    const picks = bkPicks();
+    if (!picks.length) { toast('Pilih minimal satu layanan dulu','error'); return; }
+    const miss = picks.find(p => p.type === 'svc' && p.v.main.length && !p.variant);
+    if (miss) { toast('Jawab dulu: ' + miss.name + ' — ' + (BK_QUESTION[miss.key]||'pilih durasi'),'error'); return; }
   }
   if (step===2) {
     const d=document.getElementById('bkDate'), t=document.getElementById('bkTime');
@@ -1404,10 +1425,29 @@ function submitBookingFinal() {
   addOrder(newOrder);
   if (combo && typeof window.pkClearSelection === 'function') window.pkClearSelection();
 
+  // Ringkasan pesanan -> kotak pesan dasbor admin + WhatsApp admin
+  const detail =
+    '🧾 ID Pesanan: ' + newOrder.id + '\n' +
+    '👤 Nama: ' + newOrder.customer + '\n' +
+    '📱 WhatsApp: ' + newOrder.wa + '\n' +
+    '💝 Talent: ' + o.talentName + '\n' +
+    '📦 Layanan: ' + o.service + '\n' +
+    '📅 Jadwal: ' + bkFmtDate(o.date) + (o.time ? ', ' + o.time + ' WIB' : '') + '\n' +
+    '📍 Lokasi: ' + o.location + '\n' +
+    '💰 Total: Rp ' + o.total +
+    (newOrder.note.trim() ? '\n📝 Catatan: ' + newOrder.note.trim() : '');
+  try {
+    sendInboxMessage({ name: newOrder.customer.slice(0,100), contact: newOrder.wa, message: ('Booking baru\n' + detail).slice(0,990),
+      talentId: talent ? talent.id : null, talentName: o.talentName !== 'Ditentukan Admin' ? o.talentName : null, source: 'Booking' });
+  } catch(e) { console.error('inbox booking error:', e); }
+  const waText = 'Halo Admin Nabillove 👋\n\nSaya mau booking:\n\n' + detail + '\n\n(Dikirim dari website Nabillove)';
+  openWhatsApp(waText);   // dipanggil langsung dari klik, supaya tidak diblokir browser
+  const waLink = 'https://wa.me/' + ADMIN_WA + '?text=' + encodeURIComponent(waText);
+
   closeModal('bookingModal');
-  toast('Booking berhasil dikirim! 🎉', 'success');
+  toast('Pesanan masuk ke admin ✓ Lanjutkan kirim di WhatsApp', 'success');
   setTimeout(() => showNotifModal(
-    `Booking <strong>${bkEsc(o.service)}</strong> dengan <strong>${bkEsc(o.talentName)}</strong> berhasil!<br><br>Konfirmasi dikirim ke WhatsApp <strong>${bkEsc(wa.trim())}</strong> dalam 5–15 menit.`,
+    `Pesanan <strong>${bkEsc(o.service)}</strong> dengan <strong>${bkEsc(o.talentName)}</strong> sudah masuk ke admin!<br><br>WhatsApp admin (<strong>${ADMIN_WA_TEXT}</strong>) terbuka dengan pesanan terisi — <strong>tekan kirim</strong> agar cepat diproses.<br><small>WhatsApp tidak terbuka? <a href="${waLink}" target="_blank" rel="noopener noreferrer" style="color:var(--pink-deep);font-weight:700">Buka WhatsApp Admin</a></small>`,
     talent ? talent.avatar : '💝'
   ), 400);
 }

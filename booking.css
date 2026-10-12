@@ -70,3 +70,15 @@ body.pk-bar-on { --pk-bar-h: 88px; }
 body.pk-bar-on .float-wa, body.pk-bar-on .float-music, body.pk-bar-on .back-to-top { translate: 0 calc(-1 * var(--pk-bar-h)); }
 body.pk-bar-on { padding-bottom: calc(var(--pk-bar-h) + 8px); }
 @media (prefers-reduced-motion: reduce) { .pk-bar, .float-wa, .float-music, .back-to-top { transition: none; } }
+
+/* ---------- pilih banyak layanan ---------- */
+.bk-svc-list { display: flex; flex-direction: column; gap: .5rem; }
+.bk-svc-group { margin-top: .5rem; font-size: .76rem; font-weight: 800; letter-spacing: .04em; color: var(--text-muted); text-transform: uppercase; }
+.bk-svc-row { display: flex; align-items: center; gap: .75rem; width: 100%; padding: .75rem .9rem; border: 1.5px solid var(--border); border-radius: 14px; background: var(--bg-card); color: var(--text); font-family: inherit; font-size: .92rem; text-align: left; cursor: pointer; transition: border-color .18s, background .18s, box-shadow .18s; -webkit-tap-highlight-color: transparent; }
+.bk-svc-row:active { transform: scale(.99); }
+.bk-svc-check { flex: 0 0 22px; width: 22px; height: 22px; border-radius: 7px; border: 1.5px solid var(--border); display: inline-flex; align-items: center; justify-content: center; font-size: .7rem; color: transparent; background: var(--bg); transition: all .18s; }
+.bk-svc-name { flex: 1; font-weight: 600; min-width: 0; }
+.bk-svc-sub { font-weight: 800; font-size: .84rem; color: var(--text-sec); white-space: nowrap; }
+.bk-svc-row.on { border-color: var(--pink-deep); background: var(--pink-light); box-shadow: 0 0 0 3px color-mix(in srgb, var(--pink-deep) 14%, transparent); }
+.bk-svc-row.on .bk-svc-check { background: var(--pink-deep); border-color: var(--pink-deep); color: #fff; }
+.bk-svc-row.on .bk-svc-name, .bk-svc-row.on .bk-svc-sub { color: var(--pink-deep); }
