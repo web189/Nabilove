@@ -969,7 +969,7 @@ function renderTalents() {
   if (search)  talents = talents.filter(t => t.name.toLowerCase().includes(search.toLowerCase())||t.nickname.toLowerCase().includes(search.toLowerCase()));
   if (gender)  talents = talents.filter(t => t.gender===gender);
   if (service) talents = talents.filter(t => (t.services||[]).includes(service));
-  if (loc)     talents = talents.filter(t => t.location.includes(loc));
+  if (loc.trim()) { const q = loc.trim().toLowerCase(); talents = talents.filter(t => String(t.location||'').toLowerCase().includes(q)); }
   if (sort==='rating')   talents = [...talents].sort((a,b)=>b.rating-a.rating);
   if (sort==='bookings') talents = [...talents].sort((a,b)=>b.bookings-a.bookings);
   if (sort==='name')     talents = [...talents].sort((a,b)=>a.name.localeCompare(b.name));
@@ -1151,11 +1151,31 @@ function bkVariants(key){
   return { main, addon };
 }
 
+/* paket & promo (PDKT, Relationship, dll) ikut jadi pilihan layanan */
+function bkActivePackages(){
+  try { return (window.nbPackages ? window.nbPackages.get() : []).filter(p => p.active && bkNum(p.price) > 0); } catch(e){ return []; }
+}
+function bkPackageOptions(){
+  return bkActivePackages().map(p => ({ value: 'pkg:' + p.id, label: '📦 ' + bkEsc(p.label) + ' · Rp ' + bkEsc(bkRp(bkNum(p.price))) }));
+}
+function bkRenderPackage(box, p){
+  bookingData.pkg = p; bookingData.variant = { label: p.label, price: p.price };
+  bookingData._v = { main: [], addon: null }; bookingData._key = 'paket';
+  box.innerHTML = `<div class="bk-combo" style="margin-top:1rem"><strong>📦 ${bkEsc(p.label)}</strong>
+    <ul>${p.perks.map(x => `<li><span>${bkEsc(x)}</span></li>`).join('')}</ul>
+    <div class="bk-combo-total">Total <b>Rp ${bkRp(bkNum(p.price))}</b></div></div>`;
+}
+
 function bkRenderVariants(){
   const box = document.getElementById('bkVariantBox'); if (!box) return;
   const svcEl = document.getElementById('bkService');
-  const key = bkSvcKey(svcEl ? svcEl.value : '');
-  bookingData.variant = null; bookingData.addonQty = 0;
+  bookingData.variant = null; bookingData.addonQty = 0; bookingData.pkg = null;
+  const val = svcEl ? svcEl.value : '';
+  if (val.indexOf('pkg:') === 0) {
+    const p = bkActivePackages().find(x => 'pkg:' + x.id === val);
+    if (p) { bkRenderPackage(box, p); return; }
+  }
+  const key = bkSvcKey(val);
   const v = key ? bkVariants(key) : { main: [], addon: null };
   bookingData._v = v; bookingData._key = key;
   if (!v.main.length) { box.innerHTML = ''; return; }
@@ -1239,7 +1259,7 @@ function buildBookingModal() {
       <div><strong>${talent.name}</strong><div style="font-size:.78rem;color:var(--text-muted)">${talent.location} · ⭐ ${talent.rating}</div></div>
     </div>
     <div class="form-group"><label>Pilih Layanan</label>
-      ${customSelectHTML('bkService', (talent.services||[]).map(s=>({value:s,label:s})), 'bkRenderVariants')}
+      ${customSelectHTML('bkService', [...(talent.services||[]).map(s=>({value:s,label:s})), ...bkPackageOptions()], 'bkRenderVariants')}
     </div>
     <div id="bkVariantBox"></div>`
   : `${combo ? bkComboHTML(combo) : `<div style="padding:.85rem;background:var(--purple-light);border-radius:var(--radius-sm);margin-bottom:1.25rem">
@@ -1293,7 +1313,8 @@ function bkCollect(){
   if (talent) {
     const base = serviceEl ? serviceEl.value : 'Chatting';
     const c = bkCalc();
-    if (c) { service = c.label.toLowerCase().includes(base.toLowerCase()) ? c.label : base + ' ' + c.label; total = bkRp(c.total); }
+    if (bookingData.pkg && c) { service = 'Paket ' + bookingData.pkg.label + ' (' + bookingData.pkg.perks.join(', ') + ')'; total = bkRp(c.total); }
+    else if (c) { service = c.label.toLowerCase().includes(base.toLowerCase()) ? c.label : base + ' ' + c.label; total = bkRp(c.total); }
     else   { service = base; total = talent.price || '0'; }
   } else { service = serviceName; total = servicePrice || '0'; }
   let talentName = 'Ditentukan Admin';

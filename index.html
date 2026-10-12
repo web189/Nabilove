@@ -45,7 +45,7 @@
   <link rel="stylesheet" href="theme.css?v=15" />
   <link rel="stylesheet" href="modern.css?v=14" />
   <link rel="stylesheet" href="packages.css?v=3" />
-  <link rel="stylesheet" href="polish.css?v=4" />
+  <link rel="stylesheet" href="polish.css?v=5" />
   <link rel="stylesheet" href="talent-rules.css?v=3" />
   <link rel="stylesheet" href="booking.css?v=1" />
   <link rel="manifest" href="manifest.json">
@@ -319,18 +319,7 @@
         </div>
         <input type="hidden" id="filterService" value="">
       </div>
-      <div class="custom-select" id="filterLocationWrap">
-        <button type="button" class="custom-select-trigger" onclick="toggleCustomSelect('filterLocation')"><span class="cs-value">Semua Kota</span><i class="fas fa-chevron-down"></i></button>
-        <div class="custom-select-panel" id="filterLocationPanel">
-          <div class="cs-option selected" data-value="" onclick="selectCustomOption(this,'filterLocation','renderTalents')">Semua Kota</div>
-          <div class="cs-option" data-value="Jakarta" onclick="selectCustomOption(this,'filterLocation','renderTalents')">Jakarta</div>
-          <div class="cs-option" data-value="Bandung" onclick="selectCustomOption(this,'filterLocation','renderTalents')">Bandung</div>
-          <div class="cs-option" data-value="Surabaya" onclick="selectCustomOption(this,'filterLocation','renderTalents')">Surabaya</div>
-          <div class="cs-option" data-value="Yogyakarta" onclick="selectCustomOption(this,'filterLocation','renderTalents')">Yogyakarta</div>
-          <div class="cs-option" data-value="Bali" onclick="selectCustomOption(this,'filterLocation','renderTalents')">Bali</div>
-        </div>
-        <input type="hidden" id="filterLocation" value="">
-      </div>
+      <div class="search-wrap city-wrap"><i class="fas fa-location-dot"></i><input type="text" id="filterLocation" placeholder="Ketik kota..." autocomplete="off" oninput="renderTalents()" /></div>
       <div class="custom-select" id="sortTalentWrap">
         <button type="button" class="custom-select-trigger" onclick="toggleCustomSelect('sortTalent')"><span class="cs-value">Urutkan</span><i class="fas fa-chevron-down"></i></button>
         <div class="custom-select-panel" id="sortTalentPanel">

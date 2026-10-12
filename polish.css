@@ -192,3 +192,7 @@ html, body { overflow-x: clip; }
 @media (max-width: 1024px) {
   .hcard, .hcard-1, .hcard-2, .hcard-3 { flex: 0 0 min(300px, 82vw); width: min(300px, 82vw); box-sizing: border-box; }
 }
+
+/* kolom kota: ketik manual */
+.talent-filters .city-wrap { flex: 1; min-width: calc(50% - .25rem); border-radius: 50px; padding: .5rem .9rem; }
+@media (max-width: 480px) { .talent-filters .city-wrap { min-width: calc(50% - .25rem); } }
