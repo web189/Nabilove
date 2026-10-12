@@ -103,7 +103,7 @@
       orders.map(function (o) {
         var cls = o.status === 'Selesai' ? 'badge-done' : o.status === 'Aktif' ? 'badge-active' : o.status === 'Ditolak' ? 'badge-rejected' : 'badge-pending';
         return '<tr><td class="nw" style="color:var(--text-muted);font-size:.74rem">' + esc(o.id) + '</td>' +
-          '<td><strong>' + esc(o.customer) + '</strong>' + (o.wa ? '<br><small style="color:var(--text-muted)">' + esc(o.wa) + '</small>' : '') + '</td>' +
+          '<td><strong>' + esc(o.customer) + '</strong>' + (o.age ? ' <small style="color:var(--text-muted)">(' + esc(o.age) + ' th)</small>' : '') + (o.wa ? '<br><small style="color:var(--text-muted)">' + esc(o.wa) + '</small>' : '') + '</td>' +
           '<td>' + esc(o.talent) + '</td><td>' + esc(o.service) + (o.location ? '<br><small style="color:var(--text-muted)">' + esc(o.location) + '</small>' : '') + '</td><td class="nw">' + esc(o.date) + (o.time ? '<br><small style="color:var(--text-muted)">' + esc(o.time) + ' WIB</small>' : '') + '</td>' +
           '<td class="nw" style="font-weight:700;color:var(--pink-deep)">Rp ' + esc(o.total) + '</td>' +
           '<td><span class="status-badge ' + cls + '">' + esc(o.status) + '</span></td>' +

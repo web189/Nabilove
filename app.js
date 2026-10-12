@@ -624,13 +624,14 @@ document.addEventListener('click', e => {
 //  INBOX SYSTEM — pesan masuk internal, menggantikan redirect ke WhatsApp
 // ══════════════════════════════════════════════════════
 
-function sendInboxMessage({name, contact, message, talentId, talentName, source}) {
+function sendInboxMessage({name, contact, message, talentId, talentName, source, age}) {
   const id = 'm' + Date.now() + Math.random().toString(36).slice(2,7);
   const entry = {
     name: name || 'Guest', contact: contact || '-', message: message || '',
     talentId: talentId || null, talentName: talentName || null,
     source: source || 'Website', time: new Date().toISOString(), read: false
   };
+  if (age) entry.age = age;
   db.ref('inbox/admin/' + id).set(entry);
   if (talentId) db.ref('inbox/talent_' + talentId + '/' + id).set(entry);
   return true;
@@ -649,13 +650,49 @@ function openMessageModal(talentId, talentName, presetText) {
 const ADMIN_WA = '6287778787822';
 const ADMIN_WA_TEXT = '+62 877-7878-7822';
 
-/* buka WhatsApp dengan pesan terisi (harus dipanggil langsung dari klik pengguna) */
-function openWhatsApp(text, phone) {
-  const url = 'https://wa.me/' + (phone || ADMIN_WA) + '?text=' + encodeURIComponent(text || '');
-  const a = document.createElement('a');
-  a.href = url; a.target = '_blank'; a.rel = 'noopener noreferrer';
-  document.body.appendChild(a); a.click(); a.remove();
+/* ── Helper WhatsApp ── */
+function waUrl(text, phone) {
+  return 'https://wa.me/' + (phone || ADMIN_WA) + '?text=' + encodeURIComponent(text || '');
 }
+/* rapikan nomor HP Indonesia -> { ok, local (08..), intl (628..) } */
+function normalizePhoneID(raw) {
+  let d = String(raw == null ? '' : raw).replace(/[^\d+]/g, '');
+  d = d.replace(/\+/g, '');
+  if (d.startsWith('620')) d = '62' + d.slice(3);       // 6208xx -> 628xx
+  if (d.startsWith('62')) d = '0' + d.slice(2);
+  else if (d.startsWith('8')) d = '0' + d;
+  const ok = /^08\d{8,12}$/.test(d);
+  return { ok, local: d, intl: ok ? '62' + d.slice(1) : '' };
+}
+/* batasi panjang teks supaya link wa.me tidak terlalu panjang (batas aman ±2000 karakter) */
+function waFit(text) {
+  if (waUrl(text).length <= 1900) return text;
+  let t = text.replace(/ \([^)\n]*\)/g, '');             // buang isi kurung (rincian paket)
+  if (waUrl(t).length <= 1900) return t;
+  while (waUrl(t + '…').length > 1900 && t.length > 100) t = t.slice(0, -40);
+  return t + '…';
+}
+/* buka WhatsApp dengan pesan terisi (harus dipanggil langsung dari klik pengguna).
+   Return true jika berhasil dibuka; false jika diblokir -> tampilkan tautan manual. */
+function openWhatsApp(text, phone) {
+  const url = waUrl(waFit(text), phone);
+  try {
+    const w = window.open(url, '_blank', 'noopener');
+    if (w) return true;
+  } catch (e) {}
+  try {
+    const a = document.createElement('a');
+    a.href = url; a.target = '_blank'; a.rel = 'noopener noreferrer';
+    document.body.appendChild(a); a.click(); a.remove();
+    return true;
+  } catch (e) {}
+  try { window.location.href = url; return true; } catch (e) {}
+  return false;
+}
+
+/* format pesan WhatsApp: rapi, pakai *tebal* ala WhatsApp */
+function waLine(label, value) { return label + ' : ' + value; }
+function waDivider() { return '━━━━━━━━━━━━━━━'; }
 
 function submitMessage() {
   const name = (document.getElementById('msgName')||{}).value?.trim();
@@ -667,8 +704,25 @@ function submitMessage() {
   sendInboxMessage({ name, contact, message: text, talentId: ctx.talentId, talentName: ctx.talentName, source: ctx.talentName ? 'Chat Talent' : 'Chat Admin' });
   closeModal('messageModal');
   // 2) semua pesan juga dibuka di WhatsApp admin (pengguna tinggal menekan kirim)
-  openWhatsApp('Halo Admin Nabillove 👋\n\nNama: ' + name + '\nKontak: ' + contact + (ctx.talentName ? '\nUntuk talent: ' + ctx.talentName : '') + '\n\nPesan:\n' + text + '\n\n(Dikirim dari website Nabillove)');
-  toast('Pesan masuk ke admin ✓ Lanjutkan kirim di WhatsApp','success');
+  const ph = normalizePhoneID(contact);
+  const msgWa = [
+    'Halo Admin Nabillove 👋',
+    '',
+    waDivider(),
+    '💌 *PESAN BARU*',
+    waDivider(),
+    '',
+    '👤 ' + waLine('Nama', name),
+    '📱 ' + waLine('Kontak', ph.ok ? ph.local : contact),
+    ctx.talentName ? '💝 ' + waLine('Untuk talent', ctx.talentName) : null,
+    '',
+    '📝 *Pesan:*',
+    text,
+    '',
+    '_Dikirim dari website Nabillove_'
+  ].filter(v => v !== null).join('\n');
+  const opened = openWhatsApp(msgWa);
+  toast(opened ? 'Pesan masuk ke admin ✓ Lanjutkan kirim di WhatsApp' : 'Pesan masuk ke admin ✓ Buka WhatsApp admin untuk melanjutkan', 'success');
   document.getElementById('msgName').value = '';
   document.getElementById('msgContact').value = '';
   document.getElementById('msgText').value = '';
@@ -1228,7 +1282,7 @@ function bkCalc(){
       total += bkNum(bookingData.talent && bookingData.talent.price); parts.push(p.name);
     }
   }
-  return parts.length ? { label: parts.join(' + '), total } : null;
+  return parts.length ? { label: parts.join(' + '), total, parts } : null;
 }
 function bkUpdateTotal(){
   const el = document.getElementById('bkTotal'); if (!el) return;
@@ -1314,8 +1368,9 @@ function buildBookingModal() {
     <div class="booking-step" id="bkStep3">
       <h4 style="font-family:var(--font-display);margin-bottom:1.25rem">3. Data Pemesan</h4>
       <div id="bkSummary"></div>
-      <div class="form-group"><label>Nama Lengkap *</label><input type="text" id="bkName" placeholder="Nama lengkapmu" style="${inputStyle}" /></div>
-      <div class="form-group" style="margin-top:.75rem"><label>WhatsApp *</label><input type="text" id="bkWa" placeholder="08xxxxxxxxxx" style="${inputStyle}" /></div>
+      <div class="form-group"><label>Nama Lengkap *</label><input type="text" id="bkName" autocomplete="name" placeholder="Nama lengkapmu" style="${inputStyle}" /></div>
+      <div class="form-group" style="margin-top:.75rem"><label>Umur *</label><input type="number" id="bkAge" inputmode="numeric" min="18" max="80" placeholder="Umurmu (min. 18 tahun)" style="${inputStyle}" /></div>
+      <div class="form-group" style="margin-top:.75rem"><label>WhatsApp *</label><input type="tel" id="bkWa" inputmode="tel" autocomplete="tel" placeholder="08xxxxxxxxxx" style="${inputStyle}" /></div>
       <div class="form-group" style="margin-top:.75rem"><label>Catatan</label><textarea id="bkNote" rows="2" placeholder="Pesan untuk talent..." style="${inputStyle};resize:vertical"></textarea></div>
       <div style="padding:.7rem;background:var(--pink-light);border-radius:var(--radius-sm);font-size:.78rem;color:var(--pink-deep);margin:.75rem 0"><i class="fas fa-shield-alt"></i> Data kamu aman & hanya untuk keperluan booking.</div>
       <div style="display:flex;gap:.75rem">
@@ -1330,17 +1385,20 @@ function buildBookingModal() {
 function bkCollect(){
   const {talent, serviceName, servicePrice, combo} = bookingData;
   const talentEl  = document.getElementById('bkTalent');
-  let service, total;
+  let service, total, lines;
   if (talent) {
     const c = bkCalc();
-    if (c) { service = c.label; total = bkRp(c.total); }
-    else   { service = 'Chatting'; total = talent.price || '0'; }
-  } else { service = serviceName; total = servicePrice || '0'; }
+    if (c) { service = c.label; total = bkRp(c.total); lines = c.parts; }
+    else   { service = 'Chatting'; total = talent.price || '0'; lines = ['Chatting']; }
+  } else {
+    service = serviceName; total = servicePrice || '0';
+    lines = combo ? combo.map(i => (i.group ? i.group + ' ' : '') + i.label + (i.price ? ' — Rp ' + bkRp(bkNum(i.price)) : '')) : [serviceName];
+  }
   let talentName = 'Ditentukan Admin';
   if (talent) talentName = talent.name;
   else if (talentEl && talentEl.value) { const sel = getTalents().find(x => x.id===talentEl.value); talentName = sel ? sel.name : 'Ditentukan Admin'; }
   return {
-    service, total, talentName, items: combo || null,
+    service, total, lines, talentName, items: combo || null,
     date: (document.getElementById('bkDate')||{}).value || bkToday(),
     time: (document.getElementById('bkTime')||{}).value || '',
     location: (document.getElementById('bkLocation')||{}).value || 'Online (WhatsApp)'
@@ -1398,56 +1456,103 @@ function updateBkProgress() {
   });
 }
 
+let _bkSending = false;
 function submitBookingFinal() {
-  const name = (document.getElementById('bkName')||{}).value||'';
-  const wa   = (document.getElementById('bkWa')  ||{}).value||'';
-  if (!name.trim()||!wa.trim()) { toast('Lengkapi nama dan WhatsApp!','error'); return; }
+  if (_bkSending) return;                       // cegah klik ganda
+  const name = ((document.getElementById('bkName')||{}).value||'').trim().replace(/\s+/g,' ');
+  const ageRaw = ((document.getElementById('bkAge') ||{}).value||'').trim();
+  const waRaw  = ((document.getElementById('bkWa')  ||{}).value||'').trim();
+  const age = parseInt(ageRaw, 10);
+  const ph = normalizePhoneID(waRaw);
+  if (name.length < 2)                    { toast('Isi nama lengkap dulu ya','error'); return; }
+  if (!ageRaw || isNaN(age))              { toast('Isi umur kamu dulu ya','error'); return; }
+  if (age < 18)                           { toast('Minimal usia 18 tahun','error'); return; }
+  if (age > 80)                           { toast('Umur tidak valid','error'); return; }
+  if (!ph.ok)                             { toast('Nomor WhatsApp tidak valid. Contoh: 081234567890','error'); return; }
+
+  _bkSending = true; setTimeout(() => { _bkSending = false; }, 4000);
 
   const o = bkCollect();
   const {talent, combo} = bookingData;
+  const note = ((document.getElementById('bkNote')||{}).value||'').trim();
   const newOrder = {
     id:       'ORD' + String(Date.now()).slice(-8),
-    customer: name.trim(),
-    wa:       wa.trim(),
+    customer: name.slice(0,100),
+    age:      age,
+    wa:       ph.local,
     talent:   o.talentName,
     service:  o.service,
     date:     o.date,
     time:     o.time,
     location: o.location,
-    note:     (document.getElementById('bkNote')||{}).value||'',
+    note:     note.slice(0,500),
     status:   'Menunggu',
     total:    o.total,
     createdAt: Date.now()
   };
   if (combo) newOrder.items = combo.map(i => ({ group: i.group||'', label: i.label, price: i.price }));
 
-  // Simpan ke Firebase Realtime Database
-  addOrder(newOrder);
-  if (combo && typeof window.pkClearSelection === 'function') window.pkClearSelection();
+  // ── Pesan WhatsApp (rapi, format WhatsApp) ──
+  const svcLines = (o.lines && o.lines.length ? o.lines : [o.service]).map(l => '• ' + l);
+  const waText = [
+    'Halo Admin Nabillove 👋',
+    'Saya mau booking:',
+    '',
+    waDivider(),
+    '🧾 *ID PESANAN*',
+    '*' + newOrder.id + '*',
+    waDivider(),
+    '',
+    '*👤 DATA PEMESAN*',
+    waLine('Nama', newOrder.customer),
+    waLine('Umur', newOrder.age + ' tahun'),
+    waLine('WhatsApp', newOrder.wa),
+    '',
+    '*💝 DETAIL BOOKING*',
+    waLine('Talent', o.talentName),
+    waLine('Tanggal', bkFmtDate(o.date)),
+    waLine('Jam', (o.time || '-') + ' WIB'),
+    waLine('Lokasi', o.location),
+    '',
+    '*📦 LAYANAN*',
+    ...svcLines,
+    '',
+    '💰 *TOTAL: Rp ' + o.total + '*',
+    note ? '' : null,
+    note ? '📝 *Catatan:*' : null,
+    note || null,
+    '',
+    waDivider(),
+    '_Dikirim dari website Nabillove_'
+  ].filter(v => v !== null).join('\n');
 
-  // Ringkasan pesanan -> kotak pesan dasbor admin + WhatsApp admin
-  const detail =
-    '🧾 ID Pesanan: ' + newOrder.id + '\n' +
-    '👤 Nama: ' + newOrder.customer + '\n' +
-    '📱 WhatsApp: ' + newOrder.wa + '\n' +
-    '💝 Talent: ' + o.talentName + '\n' +
-    '📦 Layanan: ' + o.service + '\n' +
-    '📅 Jadwal: ' + bkFmtDate(o.date) + (o.time ? ', ' + o.time + ' WIB' : '') + '\n' +
-    '📍 Lokasi: ' + o.location + '\n' +
-    '💰 Total: Rp ' + o.total +
-    (newOrder.note.trim() ? '\n📝 Catatan: ' + newOrder.note.trim() : '');
+  // 1) BUKA WHATSAPP DULU — langsung dari klik, sebelum proses lain, supaya tidak diblokir browser
+  const opened = openWhatsApp(waText);
+  const waLink = waUrl(waFit(waText));
+
+  // 2) Simpan ke database (error di sini tidak boleh menggagalkan WhatsApp)
+  try { addOrder(newOrder); } catch (e) { console.error('addOrder error:', e); }
+  try { if (combo && typeof window.pkClearSelection === 'function') window.pkClearSelection(); } catch (e) {}
   try {
-    sendInboxMessage({ name: newOrder.customer.slice(0,100), contact: newOrder.wa, message: ('Booking baru\n' + detail).slice(0,990),
+    const inboxDetail = [
+      '🧾 ID Pesanan: ' + newOrder.id,
+      '👤 Nama: ' + newOrder.customer + ' (' + newOrder.age + ' th)',
+      '📱 WhatsApp: ' + newOrder.wa,
+      '💝 Talent: ' + o.talentName,
+      '📦 Layanan: ' + (o.lines || [o.service]).join(' + '),
+      '📅 Jadwal: ' + bkFmtDate(o.date) + (o.time ? ', ' + o.time + ' WIB' : ''),
+      '📍 Lokasi: ' + o.location,
+      '💰 Total: Rp ' + o.total,
+      note ? '📝 Catatan: ' + note : null
+    ].filter(Boolean).join('\n');
+    sendInboxMessage({ name: newOrder.customer, contact: newOrder.wa, age: String(newOrder.age), message: ('Booking baru\n' + inboxDetail).slice(0,990),
       talentId: talent ? talent.id : null, talentName: o.talentName !== 'Ditentukan Admin' ? o.talentName : null, source: 'Booking' });
-  } catch(e) { console.error('inbox booking error:', e); }
-  const waText = 'Halo Admin Nabillove 👋\n\nSaya mau booking:\n\n' + detail + '\n\n(Dikirim dari website Nabillove)';
-  openWhatsApp(waText);   // dipanggil langsung dari klik, supaya tidak diblokir browser
-  const waLink = 'https://wa.me/' + ADMIN_WA + '?text=' + encodeURIComponent(waText);
+  } catch (e) { console.error('inbox booking error:', e); }
 
   closeModal('bookingModal');
-  toast('Pesanan masuk ke admin ✓ Lanjutkan kirim di WhatsApp', 'success');
+  toast(opened ? 'Pesanan masuk ke admin ✓ Lanjutkan kirim di WhatsApp' : 'Pesanan masuk ke admin ✓ Buka WhatsApp admin untuk melanjutkan', 'success');
   setTimeout(() => showNotifModal(
-    `Pesanan <strong>${bkEsc(o.service)}</strong> dengan <strong>${bkEsc(o.talentName)}</strong> sudah masuk ke admin!<br><br>WhatsApp admin (<strong>${ADMIN_WA_TEXT}</strong>) terbuka dengan pesanan terisi — <strong>tekan kirim</strong> agar cepat diproses.<br><small>WhatsApp tidak terbuka? <a href="${waLink}" target="_blank" rel="noopener noreferrer" style="color:var(--pink-deep);font-weight:700">Buka WhatsApp Admin</a></small>`,
+    `Pesanan <strong>${bkEsc(o.talentName)}</strong> sudah masuk ke admin!<br><br>WhatsApp admin (<strong>${ADMIN_WA_TEXT}</strong>) ${opened ? 'terbuka dengan pesanan terisi — <strong>tekan kirim</strong> agar cepat diproses.' : 'belum terbuka. Tekan tombol di bawah lalu <strong>tekan kirim</strong>.'}<br><br><a href="${waLink}" target="_blank" rel="noopener noreferrer" style="display:inline-block;padding:.65rem 1.2rem;border-radius:999px;background:var(--pink-deep);color:#fff;font-weight:700;text-decoration:none"><i class="fab fa-whatsapp"></i> Buka WhatsApp Admin</a>`,
     talent ? talent.avatar : '💝'
   ), 400);
 }
