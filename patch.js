@@ -61,7 +61,7 @@
   var _send = window.sendInboxMessage;
   window.sendInboxMessage = function (m) {
     m = m || {};
-    return _send({ name: esc(m.name), contact: esc(m.contact), message: esc(m.message), talentId: m.talentId, talentName: esc(m.talentName), source: m.source });
+    return _send({ name: esc(m.name), contact: esc(m.contact), message: esc(m.message), talentId: m.talentId, talentName: esc(m.talentName), source: m.source, age: m.age });
   };
 
   /* ---------- Tabel: label tiap sel supaya jadi kartu di HP ---------- */
