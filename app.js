@@ -209,8 +209,24 @@ function setTestimonials(arr) {
   db.ref('testimonials').set(map).catch(e => console.error('setTestimonials error:', e));
 }
 
+/* Data harga dari Firebase bisa kosong / sebagian / berbentuk objek (mis. setelah Reset Data).
+   Setiap kategori dinormalisasi jadi array; kalau kosong atau tidak ada harga valid -> pakai harga bawaan,
+   supaya booking & halaman Pricelist selalu menampilkan harga. */
+function nbNormList(v){
+  if (!v || typeof v !== 'object') return [];
+  const arr = Array.isArray(v) ? v : Object.keys(v).sort((a,b) => (+a)-(+b)).map(k => v[k]);
+  return arr.filter(i => i && typeof i === 'object' && i.label != null && String(i.label).trim() !== '');
+}
 function getPricelist() {
-  return _priceCache || DEFAULT_PRICELIST;
+  const src = _priceCache || {};
+  const out = {};
+  new Set(Object.keys(DEFAULT_PRICELIST).concat(Object.keys(src))).forEach(k => {
+    let list = nbNormList(src[k]);
+    const priced = list.some(i => (parseInt(String(i.price == null ? '' : i.price).replace(/\D/g,''),10) || 0) > 0);
+    if (!priced && DEFAULT_PRICELIST[k]) list = DEFAULT_PRICELIST[k];
+    out[k] = JSON.parse(JSON.stringify(list));
+  });
+  return out;
 }
 
 function setPricelist(pl) {
@@ -1209,12 +1225,19 @@ function bkActivePackages(){
 /* ---- pilih BANYAK layanan: bookingData.picks = [{type:'svc'|'pkg', name, key, pkg, variant, addonQty, v}] ---- */
 function bkPicks(){ return bookingData.picks || (bookingData.picks = []); }
 
+/* harga terendah sebuah layanan -> "mulai Rp 26.000" */
+function bkFromPrice(name){
+  const key = bkSvcKey(name); if (!key) return '';
+  const nums = bkVariants(key).main.map(i => bkNum(i.price)).filter(n => n > 0);
+  return nums.length ? 'mulai Rp ' + bkRp(Math.min.apply(null, nums)) : '';
+}
+
 function bkSvcListHTML(talent){
   const svcs = talent.services || [], pk = bkActivePackages();
   bookingData._svcNames = svcs; bookingData._pkgs = pk;
   const row = (kind, i, title, sub) => `<button type="button" class="bk-svc-row" data-k="${kind}${i}" onclick="bkToggle('${kind}',${i})" aria-pressed="false">
       <span class="bk-svc-check"><i class="fas fa-check"></i></span><span class="bk-svc-name">${title}</span>${sub ? `<span class="bk-svc-sub">${sub}</span>` : ''}</button>`;
-  return `<div class="bk-svc-list">${svcs.map((s,i) => row('s', i, bkEsc(s), '')).join('')}
+  return `<div class="bk-svc-list">${svcs.map((s,i) => row('s', i, bkEsc(s), bkFromPrice(s))).join('')}
     ${pk.length ? `<div class="bk-svc-group">📦 Paket & Promo</div>${pk.map((p,i) => row('p', i, bkEsc(p.label), 'Rp ' + bkEsc(bkRp(bkNum(p.price))))).join('')}` : ''}</div>`;
 }
 
@@ -1267,22 +1290,23 @@ function bkAddon(pi, d){
   p.addonQty = Math.max(0, Math.min(6, (p.addonQty||0) + d));
   bkRenderVariants();
 }
-/* hasil semua pilihan (talent) -> {label,total} */
+/* hasil semua pilihan (talent) -> {label,total,parts,lines}; lines = rincian per layanan lengkap dengan harga */
 function bkCalc(){
   const picks = bkPicks(); if (!picks.length) return null;
-  let total = 0; const parts = [];
+  let total = 0; const parts = [], lines = [];
+  const add = (lab, sub, note) => { total += sub; parts.push(lab); lines.push(lab + (sub > 0 ? ' — Rp ' + bkRp(sub) : (note || ''))); };
   for (const p of picks) {
-    if (p.type === 'pkg') { total += bkNum(p.pkg.price); parts.push('Paket ' + p.pkg.label + ' (' + p.pkg.perks.join(', ') + ')'); continue; }
+    if (p.type === 'pkg') { add('Paket ' + p.pkg.label + ' (' + p.pkg.perks.join(', ') + ')', bkNum(p.pkg.price)); continue; }
     if (p.v.main.length) {
       if (!p.variant) continue;
       let sub = bkNum(p.variant.price), lab = p.variant.label.toLowerCase().includes(p.name.toLowerCase()) ? p.variant.label : p.name + ' ' + p.variant.label;
       if ((p.addonQty||0) > 0 && p.v.addon) { sub += bkNum(p.v.addon.price) * p.addonQty; lab += ' + ' + p.addonQty + ' Jam tambahan'; }
-      total += sub; parts.push(lab);
+      add(lab, sub);
     } else {                                   // layanan tanpa daftar harga -> harga dasar talent
-      total += bkNum(bookingData.talent && bookingData.talent.price); parts.push(p.name);
+      add(p.name, bkNum(bookingData.talent && bookingData.talent.price), ' — harga dikonfirmasi admin');
     }
   }
-  return parts.length ? { label: parts.join(' + '), total, parts } : null;
+  return parts.length ? { label: parts.join(' + '), total, parts, lines } : null;
 }
 function bkUpdateTotal(){
   const el = document.getElementById('bkTotal'); if (!el) return;
@@ -1388,7 +1412,7 @@ function bkCollect(){
   let service, total, lines;
   if (talent) {
     const c = bkCalc();
-    if (c) { service = c.label; total = bkRp(c.total); lines = c.parts; }
+    if (c) { service = c.label; total = bkRp(c.total); lines = c.lines; }
     else   { service = 'Chatting'; total = talent.price || '0'; lines = ['Chatting']; }
   } else {
     service = serviceName; total = servicePrice || '0';
