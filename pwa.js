@@ -7,6 +7,14 @@ function $(id) { return document.getElementById(id); }
 function installed() { return (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true; }
 function idle(fn) { try { (window.requestIdleCallback || setTimeout)(fn, 1500); } catch (e) { setTimeout(fn, 1500); } }
 
+
+/* ============ URL BERSIH: hilangkan "#" di belakang alamat ============ */
+function cleanHash() { try { if (location.hash === '' && location.href.slice(-1) === '#' || location.hash === '#') history.replaceState(null, '', location.pathname + location.search); } catch (e) {} }
+document.addEventListener('click', function (e) {
+  var a = e.target.closest && e.target.closest('a[href="#"]'); if (a) { e.preventDefault(); cleanHash(); }
+}, true);
+cleanHash(); window.addEventListener('load', cleanHash); window.addEventListener('hashchange', cleanHash);
+
 /* ============ STATUS JARINGAN / UPDATE (banner kecil) ============ */
 var netEl, netTimer;
 function banner(text, cls, ms) {
