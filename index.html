@@ -48,8 +48,9 @@
   <link rel="stylesheet" href="polish.css?v=5" />
   <link rel="stylesheet" href="talent-rules.css?v=3" />
   <link rel="stylesheet" href="booking.css?v=3" />
+  <link rel="stylesheet" href="nb-system.css?v=13" />
   <link rel="manifest" href="manifest.json">
-  <link rel="apple-touch-icon" href="icon-192.png?v=2">
+  <script>window.__nbDPHooked=1;window.addEventListener("beforeinstallprompt",function(e){e.preventDefault();window.__nbDP=e;try{window.dispatchEvent(new Event("nb-dp"))}catch(x){}});</script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com" />
@@ -62,28 +63,26 @@
 <!-- CUSTOM CURSOR -->
 
 <!-- LOADING SCREEN -->
-<div class="loading-screen" id="loadingScreen">
-  <div class="loading-particles" id="loadingParticles"></div>
-  <div class="loading-inner">
-    <div class="loading-ring">
-      <svg viewBox="0 0 100 100">
-        <defs>
-          <linearGradient id="loadingGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stop-color="#b8144a"/>
-            <stop offset="55%" stop-color="#b98a44"/>
-            <stop offset="100%" stop-color="#8f74c9"/>
-          </linearGradient>
-        </defs>
-        <circle class="ring-bg" cx="50" cy="50" r="42"></circle>
-        <circle class="ring-fg" cx="50" cy="50" r="42"></circle>
-      </svg>
-      <img class="loading-heart" src="logo-n.png" alt="">
+<div class="loading-screen nbl" id="loadingScreen" role="status" aria-live="polite" aria-label="Memuat Nabillove">
+  <div class="nbl-aurora" aria-hidden="true"><i></i><i></i><i></i></div>
+  <div class="nbl-grid" aria-hidden="true"></div>
+  <div class="nbl-stage">
+    <div class="nbl-live"><b></b>Companionship Premium</div>
+    <div class="nbl-mark" aria-hidden="true">
+      <svg viewBox="0 0 100 100"><defs><linearGradient id="nblGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff5c8a"/><stop offset=".55" stop-color="#e0b978"/><stop offset="1" stop-color="#8f74c9"/></linearGradient></defs>
+        <circle class="bg" cx="50" cy="50" r="46"/><circle class="fg" cx="50" cy="50" r="46"/></svg>
+      <div class="orb"></div>
+      <img src="logo-n.png" alt="" width="92" height="62" decoding="async">
     </div>
-    <div class="loading-logo">Nabil<span>love</span></div>
-    <div class="loading-tagline">Companionship Premium</div>
-    <div class="loading-bar"><div class="loading-fill"></div></div>
-    <p id="loadingText">Mempersiapkan pengalaman terbaik...</p>
-    <div class="loading-credit">dibuat dengan 💗 oleh <a href="https://benyoriki.com/" target="_blank" rel="noopener">benyoriki.com</a></div>
+    <h1 class="nbl-word">Nabil<em>love</em></h1>
+    <p class="nbl-tag">Teman Virtual Terbaikmu</p>
+    <p class="nbl-msg" id="loadingText">Mempersiapkan pengalaman terbaik...</p>
+    <div class="nbl-prog"><div class="nbl-track"><span class="nbl-fill"></span></div><b class="nbl-pct" id="nblPct">0%</b></div>
+    <ul class="nbl-chips"><li>Talent terverifikasi</li><li>Pembayaran aman</li><li>Privasi terjaga</li></ul>
+  </div>
+  <div class="nbl-foot">
+    <span class="nbl-ver">Versi update sistem V. 13</span>
+    <span class="nbl-credit">dibuat dengan <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg> oleh <a href="https://benyoriki.com/" target="_blank" rel="noopener noreferrer">benyoriki.com</a></span>
   </div>
 </div>
 
@@ -1001,7 +1000,16 @@
       var fdb = firebase.database();
       var clean = function (v) { return v === undefined ? null : JSON.parse(JSON.stringify(v)); };
       window.db = { ref: function (p) { var r = fdb.ref(p); return {
-        on: function (e, cb, ecb) { return r.on(e, cb, ecb || function () {}); },
+        on: function (e, cb, ecb) {
+          /* data publik disimpan di perangkat → tetap tampil saat offline / koneksi lambat */
+          if (e !== 'value' || !/^(talents|pricelist|testimonials|customPhotos|packages|settings)(\/|$)/.test(p)) return r.on(e, cb, ecb || function () {});
+          var key = 'nb_cache_' + p, got = false, cached;
+          try { var raw = localStorage.getItem(key); if (raw !== null) cached = JSON.parse(raw); } catch (x) {}
+          if (cached !== undefined && cached !== null) {
+            setTimeout(function () { if (!got) cb({ exists: function () { return true; }, val: function () { return cached; } }); }, navigator.onLine === false ? 0 : 1500);
+          }
+          return r.on(e, function (snap) { got = true; try { localStorage.setItem(key, JSON.stringify(snap.val())); } catch (x) {} cb(snap); }, ecb || function () {});
+        },
         once: function (e) { return r.once(e || 'value'); },
         set: function (v) { return r.set(clean(v)); },
         update: function (v) { return r.update(clean(v)); },
@@ -1014,12 +1022,12 @@
 })();
 </script>
 
-<script src="app.js?v=7"></script>
+<script src="app.js?v=8"></script>
 <script src="patch.js?v=4"></script>
 <script src="admin.js?v=12"></script>
 <script src="packages.js?v=3"></script>
 <script src="talent-rules.js?v=2"></script>
-<script src="pwa.js"></script>
+<script src="pwa.js?v=13"></script>
 <script src="emoji-fallback.js"></script>
 </body>
 </html>

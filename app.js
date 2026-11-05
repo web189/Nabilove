@@ -547,29 +547,37 @@ function initLoading() {
     }
   }
 
-  // Rotate loading messages across the 4s duration — pesan yang lebih hangat & personal
+  // Loading 4 detik: pesan bergantian + hitung persen, lalu tutup tepat di 4000 ms
   const messages = [
     'Mempersiapkan pengalaman terbaik...',
-    'Setiap koneksi berawal dari satu sapaan hangat 💕',
     'Menyiapkan talent pilihan untukmu...',
-    'Kadang yang kita butuh cuma teman untuk didengar',
+    'Setiap koneksi berawal dari satu sapaan hangat',
     'Hampir siap menemanimu...'
   ];
-  const textEl = document.getElementById('loadingText');
-  let mi = 0;
+  const textEl = document.getElementById('loadingText'), pctEl = document.getElementById('nblPct');
+  const TOTAL = 4000, t0 = performance.now();
+  let mi = 0, lastPct = -1;
   const msgTimer = setInterval(() => {
     mi++;
     if (textEl && mi < messages.length) {
       textEl.style.opacity = 0;
       setTimeout(() => { textEl.textContent = messages[mi]; textEl.style.opacity = 1; }, 200);
     }
-  }, 900);
+  }, 1000);
+  (function tick(now) {
+    const p = Math.min(1, ((now || performance.now()) - t0) / (TOTAL - 300));
+    const e = p < .5 ? 2*p*p : 1 - Math.pow(-2*p + 2, 2) / 2;      // easing sama dengan animasi bar
+    const pct = Math.round(e * 100);
+    if (pctEl && pct !== lastPct) { pctEl.textContent = pct + '%'; lastPct = pct; }
+    if (p < 1) requestAnimationFrame(tick);
+  })();
 
   setTimeout(() => {
     clearInterval(msgTimer);
+    if (pctEl) pctEl.textContent = '100%';
     const ls = document.getElementById('loadingScreen');
-    if (ls) ls.classList.add('hidden');
-  }, 4000);
+    if (ls) { ls.classList.add('hidden'); setTimeout(() => { ls.style.display = 'none'; }, 700); }
+  }, TOTAL);
 }
 
 function initCursor() {
